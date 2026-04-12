@@ -152,6 +152,65 @@ namespace velizade
       }
       size_ = 0;
     }
+    bool empty() const noexcept
+    {
+      return size_ == 0;
+    }
+
+    size_t size() const noexcept
+    {
+      return size_;
+    }
+
+    T& front()
+    {
+      if (empty()) throw std::runtime_error("List is empty");
+      return head->data;
+    }
+
+    const T& front() const
+    {
+      if (empty()) throw std::runtime_error("List is empty");
+      return head->data;
+    }
+
+    T& back()
+    {
+      if (empty()) throw std::runtime_error("List is empty");
+      Node* cur = head;
+      while (cur->next) cur = cur->next;
+      return cur->data;
+    }
+
+    const T& back() const
+    {
+      if (empty()) throw std::runtime_error("List is empty");
+      Node* cur = head;
+      while (cur->next) cur = cur->next;
+      return cur->data;
+    }
+
+    void push_front(const T& value)
+    {
+      head = new Node(value, head);
+      ++size_;
+    }
+
+    void push_front(T&& value)
+    {
+      head = new Node(std::move(value), head);
+      ++size_;
+    }
+
+    void pop_front()
+    {
+      if (empty()) throw std::runtime_error("List is empty");
+      Node* tmp = head;
+      head = head->next;
+      delete tmp;
+      --size_;
+    }
+
     LIter<T> begin() noexcept { return LIter<T>(head); }
     LIter<T> end() noexcept { return LIter<T>(nullptr); }
     LCIter<T> cbegin() const noexcept { return LCIter<T>(head); }
