@@ -294,11 +294,12 @@ namespace velizade
     {
       if (pos == cend() || pos.ptr->next == nullptr)
         return LIter<T>(nullptr);
-      Node* to_delete = pos.ptr->next;
-      pos.ptr->next = to_delete->next;
+      Node* node = const_cast<Node*>(pos.ptr);
+      Node* to_delete = node->next;
+      node->next = to_delete->next;
       delete to_delete;
       --size_;
-      return LIter<T>(pos.ptr->next);
+      return LIter<T>(node->next);
     }
 
     LIter<T> begin() noexcept { return LIter<T>(head); }
