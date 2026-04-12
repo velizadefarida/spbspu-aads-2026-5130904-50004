@@ -152,6 +152,65 @@ namespace velizade
       }
       size_ = 0;
     }
+
+    List(const List& other) : head(nullptr), size_(0)
+    {
+      try
+      {
+        Node** cur = &head;
+        for (Node* src = other.head; src; src = src->next)
+        {
+          *cur = new Node(src->data);
+          cur = &((*cur)->next);
+          ++size_;
+        }
+      }
+      catch (...)
+      {
+        clear();
+        throw;
+      }
+    }
+
+    List(List&& other) noexcept : head(other.head), size_(other.size_)
+    {
+      other.head = nullptr;
+      other.size_ = 0;
+    }
+
+    List& operator=(const List& other)
+    {
+      if (this != &other)
+      {
+        List tmp(other);
+        swap(tmp);
+      }
+      return *this;
+    }
+
+    List& operator=(List&& other) noexcept
+    {
+      if (this != &other)
+      {
+        clear();
+        head = other.head;
+        size_ = other.size_;
+        other.head = nullptr;
+        other.size_ = 0;
+      }
+      return *this;
+    }
+
+    void swap(List& other) noexcept
+    {
+      Node* tmp_head = head;
+      size_t tmp_size = size_;
+      head = other.head;
+      size_ = other.size_;
+      other.head = tmp_head;
+      other.size_ = tmp_size;
+    }
+
     bool empty() const noexcept
     {
       return size_ == 0;
