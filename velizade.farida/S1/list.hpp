@@ -270,6 +270,37 @@ namespace velizade
       --size_;
     }
 
+    LIter<T> insert_after(LCIter<T> pos, const T& value)
+    {
+      if (pos == cend())
+        throw std::runtime_error("Cannot insert after end");
+      Node* node = const_cast<Node*>(pos.ptr);
+      node->next = new Node(value, node->next);
+      ++size_;
+      return LIter<T>(node->next);
+    }
+
+    LIter<T> insert_after(LCIter<T> pos, T&& value)
+    {
+      if (pos == cend())
+        throw std::runtime_error("Cannot insert after end");
+      Node* node = const_cast<Node*>(pos.ptr);
+      node->next = new Node(std::move(value), node->next);
+      ++size_;
+      return LIter<T>(node->next);
+    }
+
+    LIter<T> erase_after(LCIter<T> pos)
+    {
+      if (pos == cend() || pos.ptr->next == nullptr)
+        return LIter<T>(nullptr);
+      Node* to_delete = pos.ptr->next;
+      pos.ptr->next = to_delete->next;
+      delete to_delete;
+      --size_;
+      return LIter<T>(pos.ptr->next);
+    }
+
     LIter<T> begin() noexcept { return LIter<T>(head); }
     LIter<T> end() noexcept { return LIter<T>(nullptr); }
     LCIter<T> cbegin() const noexcept { return LCIter<T>(head); }
