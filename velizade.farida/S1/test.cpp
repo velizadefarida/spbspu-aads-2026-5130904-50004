@@ -38,10 +38,10 @@ BOOST_AUTO_TEST_CASE(test_insert_after)
   List<int> lst;
   lst.push_front(3);
   lst.push_front(1);
-  auto it = lst.begin();
+  auto it = lst.cbegin();
   ++it;
   lst.insert_after(it, 2);
-  auto it2 = lst.begin();
+  auto it2 = lst.cbegin();
   BOOST_CHECK_EQUAL(*it2, 1);
   ++it2;
   BOOST_CHECK_EQUAL(*it2, 2);
@@ -55,10 +55,10 @@ BOOST_AUTO_TEST_CASE(test_erase_after)
   lst.push_front(3);
   lst.push_front(2);
   lst.push_front(1);
-  auto it = lst.begin();
+  auto it = lst.cbegin();
   lst.erase_after(it);
   BOOST_CHECK_EQUAL(lst.size(), 2);
-  auto it2 = lst.begin();
+  auto it2 = lst.cbegin();
   BOOST_CHECK_EQUAL(*it2, 1);
   ++it2;
   BOOST_CHECK_EQUAL(*it2, 3);
