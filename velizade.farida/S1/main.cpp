@@ -23,11 +23,11 @@ int main()
       }
       while (std::cin.peek() != EOF && std::cin.peek() != '\n')
       {
-        if (std::isdigit(std::cin.peek()))
+        if (std::isdigit(static_cast<unsigned char>(std::cin.peek())))
         {
           unsigned long long val;
           std::cin >> val;
-          if (!(std::cin >> val))
+          if (std::cin.fail())
           {
             std::cerr << "overflow\n";
             return 1;
