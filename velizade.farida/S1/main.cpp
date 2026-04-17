@@ -17,10 +17,10 @@ int main()
     while (std::cin >> name)
     {
       List<unsigned long long> nums;
-      while (std::cin.peek() == ' ' || std::cin.peek() == '\t') {
+      while (std::cin.peek() == ' ' || std::cin.peek() == '\t')
+      {
         std::cin.get();
       }
-
       while (std::cin.peek() != EOF && std::cin.peek() != '\n')
       {
         if (std::isdigit(std::cin.peek()))
@@ -28,20 +28,24 @@ int main()
           unsigned long long val;
           std::cin >> val;
           nums.push_front(val);
-          while (std::cin.peek() == ' ' || std::cin.peek() == '\t') {
+          while (std::cin.peek() == ' ' || std::cin.peek() == '\t')
+          {
             std::cin.get();
           }
         }
-        else {
+        else
+        {
           break;
         }
       }
-      if (std::cin.peek() == '\n') {
+      if (std::cin.peek() == '\n')
+      {
         std::cin.get();
       }
 
       List<unsigned long long> reversed;
-      for (auto it = nums.cbegin(); it != nums.cend(); ++it) {
+      for (auto it = nums.cbegin(); it != nums.cend(); ++it)
+      {
         reversed.push_front(*it);
       }
       sequences.push_front({name, std::move(reversed)});
@@ -54,23 +58,28 @@ int main()
     }
 
     List<std::pair<std::string, List<unsigned long long>>> ordered;
-    for (auto it = sequences.cbegin(); it != sequences.cend(); ++it) {
+    for (auto it = sequences.cbegin(); it != sequences.cend(); ++it)
+    {
       ordered.push_front(*it);
     }
     sequences = std::move(ordered);
 
-    size_t maxLen = 0;
-    for (auto it = sequences.cbegin(); it != sequences.cend(); ++it) {
-      if (it->second.size() > maxLen) {
-        maxLen = it->second.size();
+    bool allEmpty = true;
+    for (auto it = sequences.cbegin(); it != sequences.cend(); ++it)
+    {
+      if (!it->second.empty())
+      {
+        allEmpty = false;
       }
     }
-    if (maxLen == 0)
+
+    if (allEmpty)
     {
       bool first = true;
       for (auto it = sequences.cbegin(); it != sequences.cend(); ++it)
       {
-        if (!first) {
+        if (!first)
+        {
           std::cout << ' ';
         }
         std::cout << it->first;
@@ -79,6 +88,15 @@ int main()
       std::cout << "\n";
       std::cout << "\n";
       return 0;
+    }
+
+    size_t maxLen = 0;
+    for (auto it = sequences.cbegin(); it != sequences.cend(); ++it)
+    {
+      if (it->second.size() > maxLen)
+      {
+        maxLen = it->second.size();
+      }
     }
 
     List<List<unsigned long long>> columns;
@@ -90,7 +108,8 @@ int main()
         if (i < seq->second.size())
         {
           auto elem = seq->second.cbegin();
-          for (size_t j = 0; j < i; ++j) {
+          for (size_t j = 0; j < i; ++j)
+          {
             ++elem;
           }
           col.push_back(*elem);
@@ -105,7 +124,8 @@ int main()
       unsigned long long sum = 0;
       for (auto elem = col->cbegin(); elem != col->cend(); ++elem)
       {
-        if (*elem > std::numeric_limits<unsigned long long>::max() - sum) {
+        if (sum > std::numeric_limits<unsigned long long>::max() - *elem)
+        {
           throw std::overflow_error("overflow");
         }
         sum += *elem;
@@ -116,7 +136,8 @@ int main()
     bool first = true;
     for (auto it = sequences.cbegin(); it != sequences.cend(); ++it)
     {
-      if (!first) {
+      if (!first)
+      {
         std::cout << ' ';
       }
       std::cout << it->first;
@@ -129,7 +150,10 @@ int main()
       bool firstInRow = true;
       for (auto elem = col->cbegin(); elem != col->cend(); ++elem)
       {
-        if (!firstInRow) std::cout << ' ';
+        if (!firstInRow)
+        {
+          std::cout << ' ';
+        }
         std::cout << *elem;
         firstInRow = false;
       }
@@ -139,7 +163,10 @@ int main()
     first = true;
     for (auto it = sums.cbegin(); it != sums.cend(); ++it)
     {
-      if (!first) std::cout << ' ';
+      if (!first)
+      {
+        std::cout << ' ';
+      }
       std::cout << *it;
       first = false;
     }
