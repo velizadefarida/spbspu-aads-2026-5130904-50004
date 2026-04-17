@@ -70,6 +70,7 @@ int main()
       if (!it->second.empty())
       {
         allEmpty = false;
+        break;
       }
     }
 
