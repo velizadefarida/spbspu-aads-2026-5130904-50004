@@ -23,7 +23,8 @@ int main()
       }
       while (std::cin.peek() != EOF && std::cin.peek() != '\n')
       {
-        if (std::isdigit(static_cast<unsigned char>(std::cin.peek())))
+        char c = std::cin.peek();
+        if (std::isdigit(static_cast<unsigned char>(c)))
         {
           unsigned long long val;
           std::cin >> val;
@@ -33,6 +34,7 @@ int main()
             return 1;
           }
           nums.push_front(val);
+
           while (std::cin.peek() == ' ' || std::cin.peek() == '\t')
           {
             std::cin.get();
@@ -43,6 +45,7 @@ int main()
           break;
         }
       }
+
       if (std::cin.peek() == '\n')
       {
         std::cin.get();
@@ -132,7 +135,8 @@ int main()
       {
         if (*elem > std::numeric_limits<unsigned long long>::max() - sum)
         {
-          throw std::overflow_error("overflow");
+          std::cerr << "overflow\n";
+          return 1;
         }
         sum += *elem;
       }
@@ -182,12 +186,17 @@ int main()
   }
   catch (const std::overflow_error& e)
   {
-    std::cerr << "overflow" << "\n";
+    std::cerr << "overflow\n";
     return 1;
   }
   catch (const std::exception& e)
   {
     std::cerr << e.what() << "\n";
+    return 1;
+  }
+  catch (...)
+  {
+    std::cerr << "unknown error\n";
     return 1;
   }
 }
