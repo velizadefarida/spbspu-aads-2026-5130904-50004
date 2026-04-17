@@ -124,7 +124,7 @@ int main()
       unsigned long long sum = 0;
       for (auto elem = col->cbegin(); elem != col->cend(); ++elem)
       {
-        if (sum > std::numeric_limits<unsigned long long>::max() - *elem)
+        if (*elem > std::numeric_limits<unsigned long long>::max() - sum)
         {
           throw std::overflow_error("overflow");
         }
@@ -173,6 +173,11 @@ int main()
     std::cout << "\n";
 
     return 0;
+  }
+  catch (const std::overflow_error& e)
+  {
+    std::cerr << "overflow" << "\n";
+    return 1;
   }
   catch (const std::exception& e)
   {
