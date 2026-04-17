@@ -1,138 +1,137 @@
+#include "list.hpp"
 #include <iostream>
 #include <string>
 #include <cctype>
-#include <cstdlib>
-#include "list.hpp"
 
 using namespace velizade;
 
 int main()
 {
-  List<std::pair<std::string, List<int>>> sequences;
-  std::string name;
-
-  while (std::cin >> name)
+  try
   {
-    List<int> nums;
+    List<std::pair<std::string, List<unsigned long long>>> sequences;
+    std::string name;
 
-    while (std::cin.peek() == ' ' || std::cin.peek() == '\t')
-      std::cin.get();
-
-    while (std::cin.peek() != EOF && std::cin.peek() != '\n')
+    while (std::cin >> name)
     {
-      if (std::isdigit(std::cin.peek()))
-      {
-        int val;
-        std::cin >> val;
-        nums.push_front(val);
-        while (std::cin.peek() == ' ' || std::cin.peek() == '\t')
-          std::cin.get();
+      List<unsigned long long> nums;
+      while (std::cin.peek() == ' ' || std::cin.peek() == '\t') {
+        std::cin.get();
       }
-      else
-        break;
-    }
-    if (std::cin.peek() == '\n')
-      std::cin.get();
 
-    List<int> reversed;
-    for (int v : nums)
-      reversed.push_front(v);
-    sequences.push_front({name, std::move(reversed)});
-  }
-
-  if (sequences.empty())
-  {
-    std::cout << "0" << std::endl;
-    return 0;
-  }
-
-  List<std::pair<std::string, List<int>>> ordered;
-  for (const auto& p : sequences)
-    ordered.push_front(p);
-  sequences = std::move(ordered);
-
-  bool first = true;
-  for (const auto& p : sequences)
-  {
-    if (!first) std::cout << ' ';
-    std::cout << p.first;
-    first = false;
-  }
-  std::cout << std::endl;
-
-  List<LCIter<int>> iters;
-  List<const List<int>*> lists;
-  for (const auto& p : sequences)
-  {
-    lists.push_front(&p.second);
-    iters.push_front(p.second.cbegin());
-  }
-
-  {
-    List<LCIter<int>> iters_ok;
-    for (auto it = iters.cbegin(); it != iters.cend(); ++it)
-      iters_ok.push_front(*it);
-    iters = std::move(iters_ok);
-
-    List<const List<int>*> lists_ok;
-    for (auto it = lists.cbegin(); it != lists.cend(); ++it)
-      lists_ok.push_front(*it);
-    lists = std::move(lists_ok);
-  }
-
-  List<int> sums;
-
-  while (true)
-  {
-    List<int> column;
-    auto it_it = iters.begin();
-    auto list_it = lists.begin();
-    bool any = false;
-
-    while (it_it != iters.end() && list_it != lists.end())
-    {
-      const List<int>* lst = *list_it;
-      LCIter<int>& iter = *it_it;
-      if (iter != lst->cend())
+      while (std::cin.peek() != EOF && std::cin.peek() != '\n')
       {
-        column.push_front(*iter);
-        ++iter;
-        any = true;
+        if (std::isdigit(std::cin.peek()))
+        {
+          unsigned long long val;
+          std::cin >> val;
+          nums.push_front(val);
+          while (std::cin.peek() == ' ' || std::cin.peek() == '\t') {
+            std::cin.get();
+          }
+        }
+        else {
+          break;
+        }
       }
-      ++it_it;
-      ++list_it;
-    }
-    if (!any)
-      break;
+      if (std::cin.peek() == '\n') {
+        std::cin.get();
+      }
 
-    first = true;
-    for (int v : column)
+      List<unsigned long long> reversed;
+      for (auto it = nums.cbegin(); it != nums.cend(); ++it) {
+        reversed.push_front(*it);
+      }
+      sequences.push_front({name, std::move(reversed)});
+    }
+
+    if (sequences.empty())
     {
-      if (!first) std::cout << ' ';
-      std::cout << v;
+      std::cout << "0" << "\n";
+      return 0;
+    }
+
+    List<std::pair<std::string, List<unsigned long long>>> ordered;
+    for (auto it = sequences.cbegin(); it != sequences.cend(); ++it) {
+      ordered.push_front(*it);
+    }
+    sequences = std::move(ordered);
+
+    bool first = true;
+    for (auto it = sequences.cbegin(); it != sequences.cend(); ++it)
+    {
+      if (!first) {
+        std::cout << ' ';
+      }
+      std::cout << it->first;
       first = false;
     }
-    std::cout << std::endl;
-    int sum = 0;
-    for (int v : column)
-      sum += v;
-    sums.push_front(sum);
-  }
+    std::cout << "\n";
 
-  if (sums.empty())
+    size_t maxLen = 0;
+    for (auto it = sequences.cbegin(); it != sequences.cend(); ++it) {
+      if (it->second.size() > maxLen) {
+        maxLen = it->second.size();
+      }
+    }
+    if (maxLen == 0)
+    {
+      std::cout << "\n";
+      return 0;
+    }
+
+    List<List<unsigned long long>> columns;
+    for (size_t i = 0; i < maxLen; ++i)
+    {
+      List<unsigned long long> col;
+      for (auto seq = sequences.cbegin(); seq != sequences.cend(); ++seq)
+      {
+        if (i < seq->second.size())
+        {
+          auto elem = seq->second.cbegin();
+          for (size_t j = 0; j < i; ++j) {
+            ++elem;
+          }
+          col.push_back(*elem);
+        }
+      }
+      columns.push_back(std::move(col));
+    }
+
+    List<unsigned long long> sums;
+    for (auto col = columns.cbegin(); col != columns.cend(); ++col)
+    {
+      bool firstInRow = true;
+      unsigned long long sum = 0;
+      for (auto elem = col->cbegin(); elem != col->cend(); ++elem)
+      {
+        if (!firstInRow) {
+          std::cout << ' ';
+        }
+        std::cout << *elem;
+        firstInRow = false;
+        sum += *elem;
+      }
+      std::cout << "\n";
+      sums.push_back(sum);
+    }
+
+    first = true;
+    for (auto it = sums.cbegin(); it != sums.cend(); ++it)
+    {
+      if (!first) {
+        std::cout << ' ';
+      }
+      std::cout << *it;
+      first = false;
+    }
+    std::cout << "\n";
+
+    return 0;
+  }
+  catch (const std::exception& e)
   {
-    std::cerr << "Error: cannot compute sums" << std::endl;
+    std::cerr << "Error: " << e.what() << "\n";
     return 1;
   }
-
-  first = true;
-  for (int s : sums)
-  {
-    if (!first) std::cout << ' ';
-    std::cout << s;
-    first = false;
-  }
-  std::cout << std::endl;
-
-  return 0;
 }

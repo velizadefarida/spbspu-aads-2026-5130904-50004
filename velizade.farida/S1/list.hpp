@@ -223,29 +223,47 @@ namespace velizade
 
     T& front()
     {
-      if (empty()) throw std::runtime_error("List is empty");
+      if (empty())
+      {
+        throw std::runtime_error("List is empty");
+      }
       return head->data;
     }
 
     const T& front() const
     {
-      if (empty()) throw std::runtime_error("List is empty");
+      if (empty())
+      {
+        throw std::runtime_error("List is empty");
+      }
       return head->data;
     }
 
     T& back()
     {
-      if (empty()) throw std::runtime_error("List is empty");
+      if (empty())
+      {
+        throw std::runtime_error("List is empty");
+      }
       Node* cur = head;
-      while (cur->next) cur = cur->next;
+      while (cur->next)
+      {
+        cur = cur->next;
+      }
       return cur->data;
     }
 
     const T& back() const
     {
-      if (empty()) throw std::runtime_error("List is empty");
+      if (empty())
+      {
+        throw std::runtime_error("List is empty");
+      }
       Node* cur = head;
-      while (cur->next) cur = cur->next;
+      while (cur->next)
+      {
+        cur = cur->next;
+      }
       return cur->data;
     }
 
@@ -263,17 +281,58 @@ namespace velizade
 
     void pop_front()
     {
-      if (empty()) throw std::runtime_error("List is empty");
+      if (empty())
+      {
+        throw std::runtime_error("List is empty");
+      }
       Node* tmp = head;
       head = head->next;
       delete tmp;
       --size_;
     }
 
+    void push_back(const T& value)
+    {
+      if (empty())
+      {
+        push_front(value);
+      }
+      else
+      {
+        Node* cur = head;
+        while (cur->next)
+        {
+          cur = cur->next;
+        }
+        cur->next = new Node(value);
+        ++size_;
+      }
+    }
+
+    void push_back(T&& value)
+    {
+      if (empty())
+      {
+        push_front(std::move(value));
+      }
+      else
+      {
+        Node* cur = head;
+        while (cur->next)
+        {
+            cur = cur->next;
+        }
+        cur->next = new Node(std::move(value));
+        ++size_;
+      }
+    }
+
     LIter<T> insert_after(LCIter<T> pos, const T& value)
     {
       if (pos == cend())
+      {
         throw std::runtime_error("Cannot insert after end");
+      }
       Node* node = const_cast<Node*>(pos.ptr);
       node->next = new Node(value, node->next);
       ++size_;
@@ -283,7 +342,9 @@ namespace velizade
     LIter<T> insert_after(LCIter<T> pos, T&& value)
     {
       if (pos == cend())
+      {
         throw std::runtime_error("Cannot insert after end");
+      }
       Node* node = const_cast<Node*>(pos.ptr);
       node->next = new Node(std::move(value), node->next);
       ++size_;
@@ -293,7 +354,9 @@ namespace velizade
     LIter<T> erase_after(LCIter<T> pos)
     {
       if (pos == cend() || pos.ptr->next == nullptr)
+      {
         return LIter<T>(nullptr);
+      }
       Node* node = const_cast<Node*>(pos.ptr);
       Node* to_delete = node->next;
       node->next = to_delete->next;
