@@ -27,6 +27,11 @@ int main()
         {
           unsigned long long val;
           std::cin >> val;
+          if (!(std::cin >> val))
+          {
+            std::cerr << "overflow\n";
+            return 1;
+          }
           nums.push_front(val);
           while (std::cin.peek() == ' ' || std::cin.peek() == '\t')
           {
@@ -87,7 +92,7 @@ int main()
         first = false;
       }
       std::cout << "\n";
-      std::cout << "\n";
+      std::cout << "0\n";
       return 0;
     }
 
