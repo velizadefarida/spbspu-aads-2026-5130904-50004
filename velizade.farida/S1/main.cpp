@@ -3,6 +3,7 @@
 #include <string>
 #include <cctype>
 #include <limits>
+#include <stdexcept>
 
 using namespace velizade;
 
