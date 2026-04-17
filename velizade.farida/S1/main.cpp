@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <cctype>
+#include <limits>
 
 using namespace velizade;
 
@@ -76,7 +77,6 @@ int main()
     }
     if (maxLen == 0)
     {
-      std::cout << "\n";
       return 0;
     }
 
@@ -110,6 +110,9 @@ int main()
         }
         std::cout << *elem;
         firstInRow = false;
+        if (*elem > std::numeric_limits<unsigned long long>::max() - sum) {
+          throw std::overflow_error("overflow");
+        }
         sum += *elem;
       }
       std::cout << "\n";
