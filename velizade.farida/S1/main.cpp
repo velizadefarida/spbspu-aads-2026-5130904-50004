@@ -59,17 +59,6 @@ int main()
     }
     sequences = std::move(ordered);
 
-    bool first = true;
-    for (auto it = sequences.cbegin(); it != sequences.cend(); ++it)
-    {
-      if (!first) {
-        std::cout << ' ';
-      }
-      std::cout << it->first;
-      first = false;
-    }
-    std::cout << "\n";
-
     size_t maxLen = 0;
     for (auto it = sequences.cbegin(); it != sequences.cend(); ++it) {
       if (it->second.size() > maxLen) {
@@ -78,6 +67,17 @@ int main()
     }
     if (maxLen == 0)
     {
+      bool first = true;
+      for (auto it = sequences.cbegin(); it != sequences.cend(); ++it)
+      {
+        if (!first) {
+          std::cout << ' ';
+        }
+        std::cout << it->first;
+        first = false;
+      }
+      std::cout << "\n";
+      std::cout << "\n";
       return 0;
     }
 
@@ -102,30 +102,44 @@ int main()
     List<unsigned long long> sums;
     for (auto col = columns.cbegin(); col != columns.cend(); ++col)
     {
-      bool firstInRow = true;
       unsigned long long sum = 0;
       for (auto elem = col->cbegin(); elem != col->cend(); ++elem)
       {
-        if (!firstInRow) {
-          std::cout << ' ';
-        }
-        std::cout << *elem;
-        firstInRow = false;
         if (*elem > std::numeric_limits<unsigned long long>::max() - sum) {
           throw std::overflow_error("overflow");
         }
         sum += *elem;
       }
-      std::cout << "\n";
       sums.push_back(sum);
+    }
+
+    bool first = true;
+    for (auto it = sequences.cbegin(); it != sequences.cend(); ++it)
+    {
+      if (!first) {
+        std::cout << ' ';
+      }
+      std::cout << it->first;
+      first = false;
+    }
+    std::cout << "\n";
+
+    for (auto col = columns.cbegin(); col != columns.cend(); ++col)
+    {
+      bool firstInRow = true;
+      for (auto elem = col->cbegin(); elem != col->cend(); ++elem)
+      {
+        if (!firstInRow) std::cout << ' ';
+        std::cout << *elem;
+        firstInRow = false;
+      }
+      std::cout << "\n";
     }
 
     first = true;
     for (auto it = sums.cbegin(); it != sums.cend(); ++it)
     {
-      if (!first) {
-        std::cout << ' ';
-      }
+      if (!first) std::cout << ' ';
       std::cout << *it;
       first = false;
     }
