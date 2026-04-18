@@ -3,6 +3,8 @@
 
 using namespace velizade;
 
+BOOST_AUTO_TEST_SUITE(ListTests)
+
 BOOST_AUTO_TEST_CASE(test_push_front_front)
 {
   List<int> lst;
@@ -97,3 +99,4 @@ BOOST_AUTO_TEST_CASE(test_const_iterators)
   BOOST_CHECK_EQUAL(*it, 1);
 }
 
+BOOST_AUTO_TEST_SUITE_END()
