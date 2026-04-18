@@ -45,9 +45,9 @@ BOOST_AUTO_TEST_CASE(test_insert_after)
   auto it2 = lst.cbegin();
   BOOST_CHECK_EQUAL(*it2, 1);
   ++it2;
-  BOOST_CHECK_EQUAL(*it2, 2);
-  ++it2;
   BOOST_CHECK_EQUAL(*it2, 3);
+  ++it2;
+  BOOST_CHECK_EQUAL(*it2, 2);
 }
 
 BOOST_AUTO_TEST_CASE(test_erase_after)
