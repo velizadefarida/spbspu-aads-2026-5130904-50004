@@ -34,7 +34,6 @@ int main()
             return 1;
           }
           nums.push_front(val);
-
           while (std::cin.peek() == ' ' || std::cin.peek() == '\t')
           {
             std::cin.get();
@@ -45,7 +44,6 @@ int main()
           break;
         }
       }
-
       if (std::cin.peek() == '\n')
       {
         std::cin.get();
@@ -131,14 +129,20 @@ int main()
     for (auto col = columns.cbegin(); col != columns.cend(); ++col)
     {
       unsigned long long sum = 0;
+      bool overflow = false;
       for (auto elem = col->cbegin(); elem != col->cend(); ++elem)
       {
         if (*elem > std::numeric_limits<unsigned long long>::max() - sum)
         {
-          std::cerr << "overflow\n";
-          return 1;
+          overflow = true;
+          break;
         }
         sum += *elem;
+      }
+      if (overflow)
+      {
+        std::cerr << "overflow\n";
+        return 1;
       }
       sums.push_back(sum);
     }
@@ -184,19 +188,9 @@ int main()
 
     return 0;
   }
-  catch (const std::overflow_error& e)
-  {
-    std::cerr << "overflow\n";
-    return 1;
-  }
-  catch (const std::exception& e)
-  {
-    std::cerr << e.what() << "\n";
-    return 1;
-  }
   catch (...)
   {
-    std::cerr << "unknown error\n";
+    std::cerr << "overflow\n";
     return 1;
   }
 }
