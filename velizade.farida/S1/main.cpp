@@ -57,6 +57,7 @@ int main()
     }
     if (maxLen == 0)
     {
+      std::cout << "0\n";
       return 0;
     }
 
@@ -70,9 +71,7 @@ int main()
         {
           auto elem = seq->second.cbegin();
           for (size_t j = 0; j < i; ++j)
-          {
             ++elem;
-          }
           col.push_back(*elem);
         }
       }
