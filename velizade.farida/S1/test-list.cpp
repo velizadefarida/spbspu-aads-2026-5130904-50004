@@ -97,4 +97,3 @@ BOOST_AUTO_TEST_CASE(test_const_iterators)
   BOOST_CHECK_EQUAL(*it, 1);
 }
 
-BOOST_AUTO_TEST_SUITE_END()
