@@ -16,7 +16,8 @@ int main()
 
     while (std::getline(std::cin, line))
     {
-      if (line.empty()) {
+      if (line.empty())
+      {
         continue;
       }
       std::istringstream iss(line);
@@ -40,20 +41,22 @@ int main()
     auto nameIt = sequences.cbegin();
     std::cout << nameIt->first;
     ++nameIt;
-    for (; nameIt != sequences.cend(); ++nameIt) {
+    for (; nameIt != sequences.cend(); ++nameIt)
+    {
       std::cout << ' ' << nameIt->first;
     }
     std::cout << '\n';
 
     size_t maxLen = 0;
-    for (auto seq = sequences.cbegin(); seq != sequences.cend(); ++seq) {
-      if (seq->second.size() > maxLen) {
+    for (auto seq = sequences.cbegin(); seq != sequences.cend(); ++seq)
+    {
+      if (seq->second.size() > maxLen)
+      {
         maxLen = seq->second.size();
       }
     }
     if (maxLen == 0)
     {
-      std::cout << '\n';
       return 0;
     }
 
@@ -66,7 +69,8 @@ int main()
         if (i < seq->second.size())
         {
           auto elem = seq->second.cbegin();
-          for (size_t j = 0; j < i; ++j) {
+          for (size_t j = 0; j < i; ++j)
+          {
             ++elem;
           }
           col.push_back(*elem);
@@ -83,15 +87,18 @@ int main()
       unsigned long long colSum = 0;
       for (auto val = col->cbegin(); val != col->cend(); ++val)
       {
-        if (!firstElem) {
+        if (!firstElem)
+        {
           std::cout << ' ';
         }
         std::cout << *val;
         firstElem = false;
-        if (colSum > std::numeric_limits<unsigned long long>::max() - *val) {
+        if (colSum > std::numeric_limits<unsigned long long>::max() - *val)
+        {
           overflow = true;
         }
-        else {
+        else
+        {
           colSum += *val;
         }
       }
@@ -108,7 +115,8 @@ int main()
     auto sumIt = sums.cbegin();
     std::cout << *sumIt;
     ++sumIt;
-    for (; sumIt != sums.cend(); ++sumIt) {
+    for (; sumIt != sums.cend(); ++sumIt)
+    {
       std::cout << ' ' << *sumIt;
     }
     std::cout << '\n';
