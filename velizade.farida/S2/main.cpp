@@ -1,8 +1,8 @@
 #include "math.hpp"
 #include <iostream>
 #include <fstream>
-#include <vector>
 #include <string>
+#include <vector>
 
 int main(int argc, char* argv[]) {
   std::istream* input = &std::cin;
