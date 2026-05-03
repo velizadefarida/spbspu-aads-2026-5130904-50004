@@ -1,5 +1,5 @@
-#ifndef STACK_HPP
-#define STACK_HPP
+#ifndef QUEUE_HPP
+#define QUEUE_HPP
 
 #include "../common/list.hpp"
 #include <stdexcept>
@@ -7,16 +7,16 @@
 namespace velizade {
 
   template<class T>
-  class Stack {
+  class Queue {
   public:
-    Stack() = default;
-    ~Stack() = default;
+    Queue() = default;
+    ~Queue() = default;
 
     void push(const T& value);
     void push(T&& value);
     T pop();
-    T& top();
-    const T& top() const;
+    T& front();
+    const T& front() const;
     bool empty() const noexcept;
     size_t size() const noexcept;
 
@@ -25,19 +25,19 @@ namespace velizade {
   };
 
   template<class T>
-  void Stack<T>::push(const T& value) {
-    list_.push_front(value);
+  void Queue<T>::push(const T& value) {
+    list_.push_back(value);
   }
 
   template<class T>
-  void Stack<T>::push(T&& value) {
-    list_.push_front(std::move(value));
+  void Queue<T>::push(T&& value) {
+    list_.push_back(std::move(value));
   }
 
   template<class T>
-  T Stack<T>::pop() {
+  T Queue<T>::pop() {
     if (empty()) {
-      throw std::runtime_error("Stack::pop on empty stack");
+      throw std::runtime_error("Queue::pop on empty queue");
     }
     T value = std::move(list_.front());
     list_.pop_front();
@@ -45,28 +45,28 @@ namespace velizade {
   }
 
   template<class T>
-  T& Stack<T>::top() {
+  T& Queue<T>::front() {
     if (empty()) {
-      throw std::runtime_error("Stack::top on empty stack");
+      throw std::runtime_error("Queue::front on empty queue");
     }
     return list_.front();
   }
 
   template<class T>
-  const T& Stack<T>::top() const {
+  const T& Queue<T>::front() const {
     if (empty()) {
-      throw std::runtime_error("Stack::top on empty stack");
+      throw std::runtime_error("Queue::front on empty queue");
     }
     return list_.front();
   }
 
   template<class T>
-  bool Stack<T>::empty() const noexcept {
+  bool Queue<T>::empty() const noexcept {
     return list_.empty();
   }
 
   template<class T>
-  size_t Stack<T>::size() const noexcept {
+  size_t Queue<T>::size() const noexcept {
     return list_.size();
   }
 }
