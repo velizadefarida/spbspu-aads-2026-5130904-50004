@@ -1,8 +1,60 @@
 #include "expression.hpp"
+#include <limits>
 #include <cstdlib>
 #include <cctype>
 #include <stdexcept>
 #include <vector>
+
+namespace {
+  bool willAdditionOverflow(long long a, long long b) {
+    if (b > 0 && a > std::numeric_limits<long long>::max() - b) {
+      return true;
+    }
+    if (b < 0 && a < std::numeric_limits<long long>::min() - b) {
+      return true;
+    }
+    return false;
+  }
+
+  bool willSubtractionOverflow(long long a, long long b) {
+    if (b > 0 && a < std::numeric_limits<long long>::min() + b) {
+      return true;
+    }
+    if (b < 0 && a > std::numeric_limits<long long>::max() + b) {
+      return true;
+    }
+    return false;
+  }
+
+  bool willMultiplicationOverflow(long long a, long long b) {
+    if (a == 0 || b == 0) {
+      return false;
+    }
+    long long max_val = std::numeric_limits<long long>::max();
+    long long min_val = std::numeric_limits<long long>::min();
+    if (a > 0 && b > 0 && a > max_val / b) {
+      return true;
+    }
+    if (a > 0 && b < 0 && b < min_val / a) {
+      return true;
+    }
+    if (a < 0 && b > 0 && a < min_val / b) {
+      return true;
+    }
+    if (a < 0 && b < 0 && a < max_val / b) {
+      return true;
+    }
+    return false;
+  }
+
+  long long positiveMod(long long a, long long b) {
+    long long r = a % b;
+    if (r < 0) {
+      r += (b > 0 ? b : -b);
+    }
+    return r;
+  }
+}
 
 int velizade::getPriority(const std::string& op) {
   if (op == ">>") {
@@ -32,17 +84,29 @@ bool velizade::isNumber(const std::string& token) {
 
 long long velizade::applyOperator(long long a, long long b, const std::string& op) {
   if (op == "+") {
+    if (willAdditionOverflow(a, b)) {
+      throw std::runtime_error("Addition overflow");
+    }
     return a + b;
   }
   if (op == "-") {
+    if (willSubtractionOverflow(a, b)) {
+      throw std::runtime_error("Subtraction overflow");
+    }
     return a - b;
   }
   if (op == "*") {
+    if (willMultiplicationOverflow(a, b)) {
+      throw std::runtime_error("Multiplication overflow");
+    }
     return a * b;
   }
   if (op == "/") {
     if (b == 0) {
       throw std::runtime_error("Division by zero");
+    }
+    if (a == std::numeric_limits<long long>::min() && b == -1) {
+      throw std::runtime_error("Division overflow");
     }
     return a / b;
   }
@@ -50,7 +114,7 @@ long long velizade::applyOperator(long long a, long long b, const std::string& o
     if (b == 0) {
       throw std::runtime_error("Modulo by zero");
     }
-    return a % b;
+    return positiveMod(a, b);
   }
   if (op == ">>") {
     if (b < 0) {
