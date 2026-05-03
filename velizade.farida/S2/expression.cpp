@@ -122,22 +122,48 @@ long long velizade::applyOperator(long long a, long long b, const std::string& o
   throw std::runtime_error("Unknown operator: " + op);
 }
 
-velizade::Queue<std::string> velizade::convertToPostfix(const std::string& line) {
+static std::vector<std::string> tokenize(const std::string& line) {
   std::vector<std::string> tokens;
-  std::string token;
-  for (char ch : line) {
-    if (ch == ' ') {
-      if (!token.empty()) {
-        tokens.push_back(token);
-        token.clear();
-      }
-    } else {
-      token.push_back(ch);
+  size_t i = 0;
+  while (i < line.size()) {
+    if (std::isspace(line[i])) {
+      ++i;
+      continue;
     }
+    if (line[i] == '(' || line[i] == ')') {
+      tokens.push_back(std::string(1, line[i]));
+      ++i;
+      continue;
+    }
+    if (line[i] == '>' && i + 1 < line.size() && line[i+1] == '>') {
+      tokens.push_back(">>");
+      i += 2;
+      continue;
+    }
+    if (line[i] == '+' || line[i] == '-' || line[i] == '*' || line[i] == '/' || line[i] == '%') {
+      tokens.push_back(std::string(1, line[i]));
+      ++i;
+      continue;
+    }
+    if (std::isdigit(line[i]) || (line[i] == '-' && i + 1 < line.size() && std::isdigit(line[i+1]))) {
+      size_t start = i;
+      if (line[i] == '-') {
+        ++i;
+      }
+      while (i < line.size() && std::isdigit(line[i])) {
+        ++i;
+      }
+      tokens.push_back(line.substr(start, i - start));
+      continue;
+    }
+    throw std::runtime_error("Invalid character in expression");
   }
-  if (!token.empty()) {
-    tokens.push_back(token);
-  }
+  return tokens;
+}
+
+velizade::Queue<std::string> velizade::convertToPostfix(const std::string& line) {
+  std::vector<std::string> tokens = tokenize(line);
+
   velizade::Queue<std::string> output;
   velizade::Stack<std::string> ops;
 
