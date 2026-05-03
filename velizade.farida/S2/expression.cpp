@@ -1,59 +1,56 @@
 #include "expression.hpp"
 #include <limits>
-#include <cstdlib>
 #include <cctype>
 #include <stdexcept>
 #include <vector>
 
-namespace {
-  bool willAdditionOverflow(long long a, long long b) {
-    if (b > 0 && a > std::numeric_limits<long long>::max() - b) {
-      return true;
-    }
-    if (b < 0 && a < std::numeric_limits<long long>::min() - b) {
-      return true;
-    }
+static bool willAdditionOverflow(long long a, long long b) {
+  if (b > 0 && a > std::numeric_limits<long long>::max() - b) {
+    return true;
+  }
+  if (b < 0 && a < std::numeric_limits<long long>::min() - b) {
+    return true;
+  }
+  return false;
+}
+
+static bool willSubtractionOverflow(long long a, long long b) {
+  if (b > 0 && a < std::numeric_limits<long long>::min() + b) {
+    return true;
+  }
+  if (b < 0 && a > std::numeric_limits<long long>::max() + b) {
+    return true;
+  }
+  return false;
+}
+
+static bool willMultiplicationOverflow(long long a, long long b) {
+  if (a == 0 || b == 0) {
     return false;
   }
-
-  bool willSubtractionOverflow(long long a, long long b) {
-    if (b > 0 && a < std::numeric_limits<long long>::min() + b) {
-      return true;
-    }
-    if (b < 0 && a > std::numeric_limits<long long>::max() + b) {
-      return true;
-    }
-    return false;
+  long long max_val = std::numeric_limits<long long>::max();
+  long long min_val = std::numeric_limits<long long>::min();
+  if (a > 0 && b > 0 && a > max_val / b) {
+    return true;
   }
-
-  bool willMultiplicationOverflow(long long a, long long b) {
-    if (a == 0 || b == 0) {
-      return false;
-    }
-    long long max_val = std::numeric_limits<long long>::max();
-    long long min_val = std::numeric_limits<long long>::min();
-    if (a > 0 && b > 0 && a > max_val / b) {
-      return true;
-    }
-    if (a > 0 && b < 0 && b < min_val / a) {
-      return true;
-    }
-    if (a < 0 && b > 0 && a < min_val / b) {
-      return true;
-    }
-    if (a < 0 && b < 0 && a < max_val / b) {
-      return true;
-    }
-    return false;
+  if (a > 0 && b < 0 && b < min_val / a) {
+    return true;
   }
-
-  long long positiveMod(long long a, long long b) {
-    long long r = a % b;
-    if (r < 0) {
-      r += (b > 0 ? b : -b);
-    }
-    return r;
+  if (a < 0 && b > 0 && a < min_val / b) {
+    return true;
   }
+  if (a < 0 && b < 0 && a < max_val / b) {
+    return true;
+  }
+  return false;
+}
+
+static long long positiveMod(long long a, long long b) {
+  long long r = a % b;
+  if (r < 0) {
+    r += (b > 0 ? b : -b);
+  }
+  return r;
 }
 
 int velizade::getPriority(const std::string& op) {
@@ -182,10 +179,11 @@ long long velizade::calculatePostfix(velizade::Queue<std::string>& postfix) {
   while (!postfix.empty()) {
     std::string token = postfix.pop();
     if (velizade::isNumber(token)) {
-      char* end;
-      long long num = std::strtoll(token.c_str(), &end, 10);
-      if (*end != '\0') {
-        throw std::runtime_error("Invalid number");
+      long long num;
+      try {
+        num = std::stoll(token);
+      } catch (const std::out_of_range&) {
+        throw std::runtime_error("Invalid number: " + token);
       }
       values.push(num);
     } else if (velizade::isOperator(token)) {
