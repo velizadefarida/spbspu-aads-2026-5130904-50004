@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cctype>
 #include <stdexcept>
+#include <vector>
 
 int velizade::getPriority(const std::string& op) {
   if (op == ">>") {
