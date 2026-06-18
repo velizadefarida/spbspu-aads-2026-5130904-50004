@@ -127,15 +127,24 @@ namespace velizade
       T data;
       Node* next;
 
-      explicit Node(const T& val, Node* n = nullptr) : data(val), next(n) {}
-      explicit Node(T&& val, Node* n = nullptr) : data(std::move(val)), next(n) {}
+      explicit Node(const T& val, Node* n = nullptr) :
+        data(val),
+        next(n)
+      {}
+      explicit Node(T&& val, Node* n = nullptr) :
+        data(std::move(val)),
+        next(n)
+      {}
     };
 
     Node* head;
     size_t size_;
 
   public:
-    List() noexcept : head(nullptr), size_(0) {}
+    List() noexcept :
+      head(nullptr),
+      size_(0)
+    {}
 
     ~List()
     {
@@ -153,7 +162,9 @@ namespace velizade
       size_ = 0;
     }
 
-    List(const List& other) : head(nullptr), size_(0)
+    List(const List& other) :
+      head(nullptr),
+      size_(0)
     {
       try
       {
@@ -172,7 +183,9 @@ namespace velizade
       }
     }
 
-    List(List&& other) noexcept : head(other.head), size_(other.size_)
+    List(List&& other) noexcept :
+      head(other.head),
+      size_(other.size_)
     {
       other.head = nullptr;
       other.size_ = 0;
