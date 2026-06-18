@@ -58,8 +58,8 @@ namespace velizade
     }
 
   private:
-    typename List<T>::Node* ptr;
-    explicit LIter(typename List<T>::Node* p) noexcept : ptr(p) {}
+    typename List< T >::Node* ptr;
+    explicit LIter(typename List< T >::Node* p) noexcept : ptr(p) {}
   };
 
   template< class T >
@@ -111,8 +111,8 @@ namespace velizade
     }
 
   private:
-    const typename List<T>::Node* ptr;
-    explicit LCIter(const typename List<T>::Node* p) noexcept : ptr(p) {}
+    const typename List< T >::Node* ptr;
+    explicit LCIter(const typename List< T >::Node* p) noexcept : ptr(p) {}
   };
 
   template< class T >
@@ -327,7 +327,7 @@ namespace velizade
       }
     }
 
-    LIter<T> insert_after(LCIter<T> pos, const T& value)
+    LIter< T > insert_after(LCIter< T > pos, const T& value)
     {
       if (pos == cend())
       {
@@ -336,10 +336,10 @@ namespace velizade
       Node* node = const_cast<Node*>(pos.ptr);
       node->next = new Node(value, node->next);
       ++size_;
-      return LIter<T>(node->next);
+      return LIter< T >(node->next);
     }
 
-    LIter<T> insert_after(LCIter<T> pos, T&& value)
+    LIter< T > insert_after(LCIter< T > pos, T&& value)
     {
       if (pos == cend())
       {
@@ -348,27 +348,27 @@ namespace velizade
       Node* node = const_cast<Node*>(pos.ptr);
       node->next = new Node(std::move(value), node->next);
       ++size_;
-      return LIter<T>(node->next);
+      return LIter< T >(node->next);
     }
 
-    LIter<T> erase_after(LCIter<T> pos)
+    LIter< T > erase_after(LCIter< T > pos)
     {
       if (pos == cend() || pos.ptr->next == nullptr)
       {
-        return LIter<T>(nullptr);
+        return LIter< T >(nullptr);
       }
       Node* node = const_cast<Node*>(pos.ptr);
       Node* to_delete = node->next;
       node->next = to_delete->next;
       delete to_delete;
       --size_;
-      return LIter<T>(node->next);
+      return LIter< T >(node->next);
     }
 
-    LIter<T> begin() noexcept { return LIter<T>(head); }
-    LIter<T> end() noexcept { return LIter<T>(nullptr); }
-    LCIter<T> cbegin() const noexcept { return LCIter<T>(head); }
-    LCIter<T> cend() const noexcept { return LCIter<T>(nullptr); }
+    LIter< T > begin() noexcept { return LIter< T >(head); }
+    LIter< T > end() noexcept { return LIter< T >(nullptr); }
+    LCIter< T > cbegin() const noexcept { return LCIter< T >(head); }
+    LCIter< T > cend() const noexcept { return LCIter< T >(nullptr); }
   };
 }
 

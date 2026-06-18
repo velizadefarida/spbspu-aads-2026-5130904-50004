@@ -11,7 +11,7 @@ int main()
 {
   try
   {
-    List<std::pair<std::string, List<unsigned long long>>> sequences;
+    List< std::pair < std::string, List < unsigned long long > > > sequences;
     std::string line;
 
     while (std::getline(std::cin, line))
@@ -61,10 +61,10 @@ int main()
       return 0;
     }
 
-    List<List<unsigned long long>> columns;
+    List< List < unsigned long long > > columns;
     for (size_t i = 0; i < maxLen; ++i)
     {
-      List<unsigned long long> col;
+      List< unsigned long long > col;
       for (auto seq = sequences.cbegin(); seq != sequences.cend(); ++seq)
       {
         if (i < seq->second.size())
@@ -78,7 +78,7 @@ int main()
       columns.push_back(std::move(col));
     }
 
-    List<unsigned long long> sums;
+    List< unsigned long long > sums;
     bool overflow = false;
     for (auto col = columns.cbegin(); col != columns.cend(); ++col)
     {
@@ -92,7 +92,7 @@ int main()
         }
         std::cout << *val;
         firstElem = false;
-        if (colSum > std::numeric_limits<unsigned long long>::max() - *val)
+        if (colSum > std::numeric_limits< unsigned long long >::max() - *val)
         {
           overflow = true;
         }
