@@ -11,7 +11,7 @@ int main()
 {
   try
   {
-    List< std::pair < std::string, List < unsigned long long > > > sequences;
+    List< std::pair< std::string, List< unsigned long long > > > sequences;
     std::string line;
 
     while (std::getline(std::cin, line))
@@ -20,6 +20,7 @@ int main()
       {
         continue;
       }
+
       std::istringstream iss(line);
       std::string name;
       iss >> name;
@@ -27,9 +28,11 @@ int main()
       unsigned long long num;
       while (iss >> num)
       {
-        numbers.push_back(num);
+        numbers.push_front(num);
       }
-      sequences.push_back({name, std::move(numbers)});
+      numbers.reverse();
+
+      sequences.push_front({name, std::move(numbers)});
     }
 
     if (sequences.empty())
@@ -37,6 +40,8 @@ int main()
       std::cout << "0\n";
       return 0;
     }
+
+    sequences.reverse();
 
     auto nameIt = sequences.cbegin();
     std::cout << nameIt->first;
@@ -57,11 +62,11 @@ int main()
     }
     if (maxLen == 0)
     {
-      std::cout << "0\n";
-      return 0;
+      std::cerr << "Error: cannot calculate sum for empty sequences\n";
+      return 1;
     }
 
-    List< List < unsigned long long > > columns;
+    List< List< unsigned long long > > columns;
     for (size_t i = 0; i < maxLen; ++i)
     {
       List< unsigned long long > col;
@@ -71,15 +76,20 @@ int main()
         {
           auto elem = seq->second.cbegin();
           for (size_t j = 0; j < i; ++j)
+          {
             ++elem;
-          col.push_back(*elem);
+          }
+          col.push_front(*elem);
         }
       }
-      columns.push_back(std::move(col));
+      col.reverse();
+      columns.push_front(std::move(col));
     }
+    columns.reverse();
 
     List< unsigned long long > sums;
     bool overflow = false;
+
     for (auto col = columns.cbegin(); col != columns.cend(); ++col)
     {
       bool firstElem = true;
@@ -92,6 +102,7 @@ int main()
         }
         std::cout << *val;
         firstElem = false;
+
         if (colSum > std::numeric_limits< unsigned long long >::max() - *val)
         {
           overflow = true;
@@ -102,8 +113,9 @@ int main()
         }
       }
       std::cout << '\n';
-      sums.push_back(colSum);
+      sums.push_front(colSum);
     }
+    sums.reverse();
 
     if (overflow)
     {
@@ -111,14 +123,17 @@ int main()
       return 1;
     }
 
-    auto sumIt = sums.cbegin();
-    std::cout << *sumIt;
-    ++sumIt;
-    for (; sumIt != sums.cend(); ++sumIt)
+    if (!sums.empty())
     {
-      std::cout << ' ' << *sumIt;
+      auto sumIt = sums.cbegin();
+      std::cout << *sumIt;
+      ++sumIt;
+      for (; sumIt != sums.cend(); ++sumIt)
+      {
+        std::cout << ' ' << *sumIt;
+      }
+      std::cout << '\n';
     }
-    std::cout << '\n';
 
     return 0;
   }

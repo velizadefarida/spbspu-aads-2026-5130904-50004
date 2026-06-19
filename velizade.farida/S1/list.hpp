@@ -128,12 +128,17 @@ namespace velizade
       Node* next;
 
       explicit Node(const T& val, Node* n = nullptr) :
-        data(val),
-        next(n)
+          data(val),
+          next(n)
       {}
+
       explicit Node(T&& val, Node* n = nullptr) :
-        data(std::move(val)),
-        next(n)
+          data(std::move(val)),
+          next(n)
+      {}
+
+      Node() noexcept :
+          next(nullptr)
       {}
     };
 
@@ -142,52 +147,56 @@ namespace velizade
 
   public:
     List() noexcept :
-      head(nullptr),
-      size_(0)
+        head(new Node()),
+        size_(0)
     {}
 
     ~List()
     {
       clear();
+      delete head;
     }
 
     void clear()
     {
-      while (head)
+      Node* cur = head->next;
+      while (cur)
       {
-        Node* tmp = head;
-        head = head->next;
+        Node* tmp = cur;
+        cur = cur->next;
         delete tmp;
       }
+      head->next = nullptr;
       size_ = 0;
     }
 
     List(const List& other) :
-      head(nullptr),
-      size_(0)
+        head(new Node()),
+        size_(0)
     {
       try
       {
-        Node** cur = &head;
-        for (Node* src = other.head; src; src = src->next)
+        Node* cur = head;
+        for (Node* src = other.head->next; src; src = src->next)
         {
-          *cur = new Node(src->data);
-          cur = &((*cur)->next);
+          cur->next = new Node(src->data);
+          cur = cur->next;
           ++size_;
         }
       }
       catch (...)
       {
         clear();
+        delete head;
         throw;
       }
     }
 
     List(List&& other) noexcept :
-      head(other.head),
-      size_(other.size_)
+        head(other.head),
+        size_(other.size_)
     {
-      other.head = nullptr;
+      other.head = new Node();
       other.size_ = 0;
     }
 
@@ -206,9 +215,10 @@ namespace velizade
       if (this != &other)
       {
         clear();
+        delete head;
         head = other.head;
         size_ = other.size_;
-        other.head = nullptr;
+        other.head = new Node();
         other.size_ = 0;
       }
       return *this;
@@ -216,17 +226,13 @@ namespace velizade
 
     void swap(List& other) noexcept
     {
-      Node* tmp_head = head;
-      size_t tmp_size = size_;
-      head = other.head;
-      size_ = other.size_;
-      other.head = tmp_head;
-      other.size_ = tmp_size;
+      std::swap(head, other.head);
+      std::swap(size_, other.size_);
     }
 
     bool empty() const noexcept
     {
-      return size_ == 0;
+      return head->next == nullptr;
     }
 
     size_t size() const noexcept
@@ -240,7 +246,7 @@ namespace velizade
       {
         throw std::runtime_error("List is empty");
       }
-      return head->data;
+      return head->next->data;
     }
 
     const T& front() const
@@ -249,7 +255,7 @@ namespace velizade
       {
         throw std::runtime_error("List is empty");
       }
-      return head->data;
+      return head->next->data;
     }
 
     T& back()
@@ -282,13 +288,13 @@ namespace velizade
 
     void push_front(const T& value)
     {
-      head = new Node(value, head);
+      head->next = new Node(value, head->next);
       ++size_;
     }
 
     void push_front(T&& value)
     {
-      head = new Node(std::move(value), head);
+      head->next = new Node(std::move(value), head->next);
       ++size_;
     }
 
@@ -298,46 +304,10 @@ namespace velizade
       {
         throw std::runtime_error("List is empty");
       }
-      Node* tmp = head;
-      head = head->next;
-      delete tmp;
+      Node* to_delete = head->next;
+      head->next = to_delete->next;
+      delete to_delete;
       --size_;
-    }
-
-    void push_back(const T& value)
-    {
-      if (empty())
-      {
-        push_front(value);
-      }
-      else
-      {
-        Node* cur = head;
-        while (cur->next)
-        {
-          cur = cur->next;
-        }
-        cur->next = new Node(value);
-        ++size_;
-      }
-    }
-
-    void push_back(T&& value)
-    {
-      if (empty())
-      {
-        push_front(std::move(value));
-      }
-      else
-      {
-        Node* cur = head;
-        while (cur->next)
-        {
-            cur = cur->next;
-        }
-        cur->next = new Node(std::move(value));
-        ++size_;
-      }
     }
 
     LIter< T > insert_after(LCIter< T > pos, const T& value)
@@ -378,10 +348,44 @@ namespace velizade
       return LIter< T >(node->next);
     }
 
-    LIter< T > begin() noexcept { return LIter< T >(head); }
-    LIter< T > end() noexcept { return LIter< T >(nullptr); }
-    LCIter< T > cbegin() const noexcept { return LCIter< T >(head); }
-    LCIter< T > cend() const noexcept { return LCIter< T >(nullptr); }
+    void reverse()
+    {
+      if (empty() || head->next->next == nullptr)
+      {
+        return;
+      }
+      Node* prev = nullptr;
+      Node* cur = head->next;
+      Node* next = nullptr;
+      while (cur)
+      {
+        next = cur->next;
+        cur->next = prev;
+        prev = cur;
+        cur = next;
+      }
+      head->next = prev;
+    }
+
+    LIter< T > begin() noexcept
+    {
+      return LIter< T >(head->next);
+    }
+
+    LIter< T > end() noexcept
+    {
+      return LIter< T >(nullptr);
+    }
+
+    LCIter< T > cbegin() const noexcept
+    {
+      return LCIter< T >(head->next);
+    }
+
+    LCIter< T > cend() const noexcept
+    {
+      return LCIter< T >(nullptr);
+    }
   };
 }
 
