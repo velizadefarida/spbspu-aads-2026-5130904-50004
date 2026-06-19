@@ -46,9 +46,9 @@ int main()
     ++nameIt;
     for (; nameIt != sequences.cend(); ++nameIt)
     {
-      std::cout << ' ' << nameIt->first;
+      std::cout << " " << nameIt->first;
     }
-    std::cout << '\n';
+    std::cout << "\n";
 
     size_t maxLen = 0;
     for (auto seq = sequences.cbegin(); seq != sequences.cend(); ++seq)
@@ -61,7 +61,7 @@ int main()
 
     if (maxLen == 0)
     {
-      std::cout << '\n';
+      std::cout << "0\n";
       return 0;
     }
 
@@ -97,7 +97,7 @@ int main()
       {
         if (!firstElem)
         {
-          std::cout << ' ';
+          std::cout << " ";
         }
         std::cout << *val;
         firstElem = false;
@@ -111,7 +111,7 @@ int main()
           colSum += *val;
         }
       }
-      std::cout << '\n';
+      std::cout << "\n";
       sums.push_front(colSum);
     }
     sums.reverse();
@@ -129,16 +129,16 @@ int main()
       ++sumIt;
       for (; sumIt != sums.cend(); ++sumIt)
       {
-        std::cout << ' ' << *sumIt;
+        std::cout << " " << *sumIt;
       }
-      std::cout << '\n';
+      std::cout << "\n";
     }
 
     return 0;
   }
   catch (const std::exception& e)
   {
-    std::cerr << "Error: " << e.what() << '\n';
+    std::cerr << "Error: " << e.what() << "\n";
     return 1;
   }
 }
