@@ -73,8 +73,8 @@ int main()
       {
         if (i < seq->second.size())
         {
-          auto elem = ++seq->second.cbegin();
-          for (size_t j = 1; j < i; ++j)
+          auto elem = seq->second.cbegin();
+          for (size_t j = 0; j <= i; ++j)
           {
             ++elem;
           }
@@ -129,9 +129,9 @@ int main()
       ++sumIt;
       for (; sumIt != sums.cend(); ++sumIt)
       {
-        std::cout << ' ' << *sumIt;
+        std::cout << " " << *sumIt;
       }
-      std::cout << '\n';
+      std::cout << "\n";
     }
 
     return 0;
