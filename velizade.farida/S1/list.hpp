@@ -2,15 +2,17 @@
 #define LIST_HPP
 
 #include <cstddef>
+#include <iterator>
 #include <stdexcept>
 #include <utility>
 
 namespace velizade
 {
-  template< class T > class List;
+  template< class T >
+  class List;
 
   template< class T >
-  class LIter
+  class LIter : public std::iterator<std::forward_iterator_tag, T>
   {
     friend class List< T >;
 
@@ -63,7 +65,7 @@ namespace velizade
   };
 
   template< class T >
-  class LCIter
+  class LCIter : public std::iterator<std::forward_iterator_tag, const T>
   {
     friend class List< T >;
 
@@ -369,7 +371,7 @@ namespace velizade
 
     LIter< T > begin() noexcept
     {
-      return LIter< T >(head->next);
+      return LIter< T >(head);
     }
 
     LIter< T > end() noexcept
@@ -379,7 +381,7 @@ namespace velizade
 
     LCIter< T > cbegin() const noexcept
     {
-      return LCIter< T >(head->next);
+      return LCIter< T >(head);
     }
 
     LCIter< T > cend() const noexcept

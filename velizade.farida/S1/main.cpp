@@ -41,7 +41,7 @@ int main()
 
     sequences.reverse();
 
-    auto nameIt = sequences.cbegin();
+    auto nameIt = ++sequences.cbegin();
     std::cout << nameIt->first;
     ++nameIt;
     for (; nameIt != sequences.cend(); ++nameIt)
@@ -51,7 +51,7 @@ int main()
     std::cout << "\n";
 
     size_t maxLen = 0;
-    for (auto seq = sequences.cbegin(); seq != sequences.cend(); ++seq)
+    for (auto seq = ++sequences.cbegin(); seq != sequences.cend(); ++seq)
     {
       if (seq->second.size() > maxLen)
       {
@@ -69,12 +69,12 @@ int main()
     for (size_t i = 0; i < maxLen; ++i)
     {
       velizade::List< unsigned long long > col;
-      for (auto seq = sequences.cbegin(); seq != sequences.cend(); ++seq)
+      for (auto seq = ++sequences.cbegin(); seq != sequences.cend(); ++seq)
       {
         if (i < seq->second.size())
         {
-          auto elem = seq->second.cbegin();
-          for (size_t j = 0; j < i; ++j)
+          auto elem = ++seq->second.cbegin();
+          for (size_t j = 1; j < i; ++j)
           {
             ++elem;
           }
@@ -89,11 +89,11 @@ int main()
     velizade::List< unsigned long long > sums;
     bool overflow = false;
 
-    for (auto col = columns.cbegin(); col != columns.cend(); ++col)
+    for (auto col = ++columns.cbegin(); col != columns.cend(); ++col)
     {
       bool firstElem = true;
       unsigned long long colSum = 0;
-      for (auto val = col->cbegin(); val != col->cend(); ++val)
+      for (auto val = ++col->cbegin(); val != col->cend(); ++val)
       {
         if (!firstElem)
         {
@@ -124,14 +124,14 @@ int main()
 
     if (!sums.empty())
     {
-      auto sumIt = sums.cbegin();
+      auto sumIt = ++sums.cbegin();
       std::cout << *sumIt;
       ++sumIt;
       for (; sumIt != sums.cend(); ++sumIt)
       {
-        std::cout << " " << *sumIt;
+        std::cout << ' ' << *sumIt;
       }
-      std::cout << "\n";
+      std::cout << '\n';
     }
 
     return 0;
