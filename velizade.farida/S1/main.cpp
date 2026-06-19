@@ -5,13 +5,11 @@
 #include <sstream>
 #include <limits>
 
-using namespace velizade;
-
 int main()
 {
   try
   {
-    List< std::pair< std::string, List< unsigned long long > > > sequences;
+    velizade::List< std::pair< std::string, velizade::List< unsigned long long > > > sequences;
     std::string line;
 
     while (std::getline(std::cin, line))
@@ -24,7 +22,7 @@ int main()
       std::istringstream iss(line);
       std::string name;
       iss >> name;
-      List<unsigned long long> numbers;
+      velizade::List<unsigned long long> numbers;
       unsigned long long num;
       while (iss >> num)
       {
@@ -60,16 +58,17 @@ int main()
         maxLen = seq->second.size();
       }
     }
+
     if (maxLen == 0)
     {
-      std::cerr << "Error: cannot calculate sum for empty sequences\n";
-      return 1;
+      std::cout << '\n';
+      return 0;
     }
 
-    List< List< unsigned long long > > columns;
+    velizade::List< velizade::List< unsigned long long > > columns;
     for (size_t i = 0; i < maxLen; ++i)
     {
-      List< unsigned long long > col;
+      velizade::List< unsigned long long > col;
       for (auto seq = sequences.cbegin(); seq != sequences.cend(); ++seq)
       {
         if (i < seq->second.size())
@@ -87,7 +86,7 @@ int main()
     }
     columns.reverse();
 
-    List< unsigned long long > sums;
+    velizade::List< unsigned long long > sums;
     bool overflow = false;
 
     for (auto col = columns.cbegin(); col != columns.cend(); ++col)
