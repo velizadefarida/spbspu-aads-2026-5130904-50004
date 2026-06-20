@@ -3,6 +3,7 @@
 
 #include <utility>
 #include <cstddef>
+#include <iterator>
 
 namespace velizade
 {
@@ -36,7 +37,6 @@ namespace velizade
 
     void advanceToNextOccupied();
   };
-
 }
 
 template<class Key, class Value, class Hash, class Equal>
@@ -45,8 +45,7 @@ velizade::HashTableIterator<Key, Value, Hash, Equal>::HashTableIterator() :
   homeIndex_(0),
   overflowIndex_(0),
   inOverflow_(false)
-{
-}
+{}
 
 template<class Key, class Value, class Hash, class Equal>
 velizade::HashTableIterator<Key, Value, Hash, Equal>::HashTableIterator(HashTableType* tbl, bool end) :

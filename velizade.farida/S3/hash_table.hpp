@@ -12,7 +12,6 @@
 
 namespace velizade
 {
-
   struct SipHash
   {
     template<class T>
@@ -33,6 +32,7 @@ namespace velizade
     using hasher = Hash;
     using key_equal = Equal;
     using iterator = HashTableIterator<Key, Value, Hash, Equal>;
+    using const_iterator = HashTableIterator<Key, Value, Hash, Equal>;
 
     friend class HashTableIterator<Key, Value, Hash, Equal>;
 
@@ -53,6 +53,11 @@ namespace velizade
 
     iterator begin();
     iterator end();
+    const_iterator begin() const;
+    const_iterator end() const;
+
+    Cell* find(const Key& k);
+    const Cell* find(const Key& k) const;
 
   private:
     struct Cell
@@ -74,8 +79,6 @@ namespace velizade
     const Cell* findInBucket(size_t idx, const Key& k) const;
     Cell* findInOverflow(const Key& k);
     const Cell* findInOverflow(const Key& k) const;
-    Cell* find(const Key& k);
-    const Cell* find(const Key& k) const;
   };
 
 }
@@ -254,6 +257,46 @@ velizade::HashTable<Key, Value, Hash, Equal>::end()
 }
 
 template<class Key, class Value, class Hash, class Equal>
+typename velizade::HashTable<Key, Value, Hash, Equal>::const_iterator
+velizade::HashTable<Key, Value, Hash, Equal>::begin() const
+{
+  return const_iterator(const_cast<HashTable*>(this));
+}
+
+template<class Key, class Value, class Hash, class Equal>
+typename velizade::HashTable<Key, Value, Hash, Equal>::const_iterator
+velizade::HashTable<Key, Value, Hash, Equal>::end() const
+{
+  return const_iterator(const_cast<HashTable*>(this), true);
+}
+
+template<class Key, class Value, class Hash, class Equal>
+typename velizade::HashTable<Key, Value, Hash, Equal>::Cell*
+velizade::HashTable<Key, Value, Hash, Equal>::find(const Key& k)
+{
+  size_t idx = getBucketIndex(k);
+  Cell* found = findInBucket(idx, k);
+  if (found)
+  {
+    return found;
+  }
+  return findInOverflow(k);
+}
+
+template<class Key, class Value, class Hash, class Equal>
+const typename velizade::HashTable<Key, Value, Hash, Equal>::Cell*
+velizade::HashTable<Key, Value, Hash, Equal>::find(const Key& k) const
+{
+  size_t idx = getBucketIndex(k);
+  const Cell* found = findInBucket(idx, k);
+  if (found)
+  {
+    return found;
+  }
+  return findInOverflow(k);
+}
+
+template<class Key, class Value, class Hash, class Equal>
 size_t velizade::HashTable<Key, Value, Hash, Equal>::getBucketIndex(const Key& k) const
 {
   return hash_(k) % numBuckets_;
@@ -317,32 +360,6 @@ velizade::HashTable<Key, Value, Hash, Equal>::findInOverflow(const Key& k) const
     }
   }
   return nullptr;
-}
-
-template<class Key, class Value, class Hash, class Equal>
-typename velizade::HashTable<Key, Value, Hash, Equal>::Cell*
-velizade::HashTable<Key, Value, Hash, Equal>::find(const Key& k)
-{
-  size_t idx = getBucketIndex(k);
-  Cell* found = findInBucket(idx, k);
-  if (found)
-  {
-    return found;
-  }
-  return findInOverflow(k);
-}
-
-template<class Key, class Value, class Hash, class Equal>
-const typename velizade::HashTable<Key, Value, Hash, Equal>::Cell*
-velizade::HashTable<Key, Value, Hash, Equal>::find(const Key& k) const
-{
-  size_t idx = getBucketIndex(k);
-  const Cell* found = findInBucket(idx, k);
-  if (found)
-  {
-    return found;
-  }
-  return findInOverflow(k);
 }
 
 #endif
