@@ -2,7 +2,6 @@
 #include <iostream>
 #include <string>
 #include <utility>
-#include <sstream>
 #include <limits>
 
 int main()
@@ -10,27 +9,19 @@ int main()
   try
   {
     velizade::List< std::pair< std::string, velizade::List< unsigned long long > > > sequences;
-    std::string line;
+    std::string name;
 
-    while (std::getline(std::cin, line))
+    while (std::cin >> name)
     {
-      if (line.empty())
-      {
-        continue;
-      }
-
-      std::istringstream iss(line);
-      std::string name;
-      iss >> name;
-      velizade::List<unsigned long long> numbers;
+      velizade::List< unsigned long long > numbers;
       unsigned long long num;
-      while (iss >> num)
+      while (std::cin >> num)
       {
         numbers.push_front(num);
       }
       numbers.reverse();
-
       sequences.push_front({name, std::move(numbers)});
+      std::cin.clear();
     }
 
     if (sequences.empty())
@@ -91,24 +82,31 @@ int main()
 
     for (auto col = ++columns.cbegin(); col != columns.cend(); ++col)
     {
-      bool firstElem = true;
       unsigned long long colSum = 0;
-      for (auto val = ++col->cbegin(); val != col->cend(); ++val)
+      auto it = ++col->cbegin();
+      if (it != col->cend())
       {
-        if (!firstElem)
-        {
-          std::cout << " ";
-        }
-        std::cout << *val;
-        firstElem = false;
-
-        if (colSum > std::numeric_limits< unsigned long long >::max() - *val)
+        std::cout << *it;
+        if (colSum > std::numeric_limits< unsigned long long >::max() - *it)
         {
           overflow = true;
         }
         else
         {
-          colSum += *val;
+          colSum += *it;
+        }
+        ++it;
+        for (; it != col->cend(); ++it)
+        {
+          std::cout << ' ' << *it;
+          if (colSum > std::numeric_limits< unsigned long long >::max() - *it)
+          {
+            overflow = true;
+          }
+          else
+          {
+            colSum += *it;
+          }
         }
       }
       std::cout << "\n";
@@ -124,14 +122,17 @@ int main()
 
     if (!sums.empty())
     {
-      auto sumIt = ++sums.cbegin();
-      std::cout << *sumIt;
-      ++sumIt;
-      for (; sumIt != sums.cend(); ++sumIt)
+      auto it = ++sums.cbegin();
+      if (it != sums.cend())
       {
-        std::cout << " " << *sumIt;
+        std::cout << *it;
+        ++it;
+        for (; it != sums.cend(); ++it)
+        {
+          std::cout << " " << *it;
+        }
+        std::cout << "\n";
       }
-      std::cout << "\n";
     }
 
     return 0;
