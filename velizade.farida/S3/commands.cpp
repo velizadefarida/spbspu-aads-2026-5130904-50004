@@ -54,7 +54,7 @@ void velizade::cmdGraphs(std::istream& in, std::ostream& out)
   std::sort(names.begin(), names.end());
   for (size_t i = 0; i < names.getSize(); ++i)
   {
-    out << names[i] << "\n";
+    out << names[i] << '\n';
   }
 }
 
@@ -76,7 +76,7 @@ void velizade::cmdVertexes(std::istream& in, std::ostream& out)
   std::sort(vlist.begin(), vlist.end());
   for (size_t i = 0; i < vlist.getSize(); ++i)
   {
-    out << vlist[i] << "\n";
+    out << vlist[i] << '\n';
   }
 }
 
@@ -118,9 +118,9 @@ void velizade::cmdOutbound(std::istream& in, std::ostream& out)
     out << entries[i].vertex;
     for (size_t j = 0; j < entries[i].weights.getSize(); ++j)
     {
-      out << " " << entries[i].weights[j];
+      out << ' ' << entries[i].weights[j];
     }
-    out << "\n";
+    out << '\n';
   }
 }
 
@@ -162,9 +162,9 @@ void velizade::cmdInbound(std::istream& in, std::ostream& out)
     out << entries[i].vertex;
     for (size_t j = 0; j < entries[i].weights.getSize(); ++j)
     {
-      out << " " << entries[i].weights[j];
+      out << ' ' << entries[i].weights[j];
     }
-    out << "\n";
+    out << '\n';
   }
 }
 

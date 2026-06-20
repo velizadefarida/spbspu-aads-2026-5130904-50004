@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <iostream>
+#include <cctype>
 
 velizade::Graph::Graph() :
   edges(16, 4)
@@ -106,7 +107,7 @@ void velizade::loadGraphsFromFile(const std::string& filename)
     {
       continue;
     }
-    size_t first = line.find_first_not_of("\t");
+    size_t first = line.find_first_not_of(" \t");
     if (first == std::string::npos)
     {
       continue;
@@ -116,14 +117,14 @@ void velizade::loadGraphsFromFile(const std::string& filename)
       line.erase(0, first);
     }
 
-    size_t pos = line.find(' ');
+    size_t pos = line.find_first_of(" \t");
     if (pos == std::string::npos)
     {
       throw std::runtime_error("Invalid file format");
     }
     std::string gname = line.substr(0, pos);
     std::string rest = line.substr(pos + 1);
-    while (!rest.empty() && rest[0] == ' ')
+    while (!rest.empty() && (rest[0] == ' ' || rest[0] == '\t'))
     {
       rest.erase(0, 1);
     }
@@ -167,7 +168,7 @@ velizade::Vector<std::string> velizade::splitLine(const std::string& line)
   size_t start = 0;
   while (start < line.size())
   {
-    while (start < line.size() && line[start] == ' ')
+    while (start < line.size() && (line[start] == ' ' || line[start] == '\t'))
     {
       ++start;
     }
@@ -176,7 +177,7 @@ velizade::Vector<std::string> velizade::splitLine(const std::string& line)
       break;
     }
     size_t end = start;
-    while (end < line.size() && line[end] != ' ')
+    while (end < line.size() && line[end] != ' ' && line[end] != '\t')
     {
       ++end;
     }
