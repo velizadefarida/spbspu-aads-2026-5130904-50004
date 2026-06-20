@@ -2,12 +2,31 @@
 #define COMMANDS_HPP
 
 #include <string>
-#include "hash_table.hpp"
+#include "hashTable.hpp"
 #include "graph.hpp"
 #include "vector.hpp"
 
 namespace velizade
 {
+  Vector<std::string> splitString(const std::string& str);
+  bool tryParseUInt(const std::string& str, unsigned int& out);
+  void throwInvalid();
+
+  template <class T>
+  void sortVector(Vector<T>& vec)
+  {
+    size_t n = vec.getSize();
+    for (size_t i = 0; i < n; ++i)
+    {
+      for (size_t j = i + 1; j < n; ++j)
+      {
+        if (vec[j] < vec[i])
+        {
+          std::swap(vec[i], vec[j]);
+        }
+      }
+    }
+  }
 
   class Application
   {
@@ -30,17 +49,10 @@ namespace velizade
     static void cmdExtract(Application* app, const Vector<std::string>& args);
 
     using CommandFunc = void (*)(Application*, const Vector<std::string>&);
+
     HashTable<std::string, CommandFunc> commands_;
     HashTable<std::string, Graph> graphs_;
   };
-
-
-  template<class T>
-  void sortVector(Vector<T>& vec);
-  Vector<std::string> splitString(const std::string& str);
-  bool tryParseUInt(const std::string& str, unsigned long long& out);
-  void throwInvalid();
-
 }
 
 #endif
