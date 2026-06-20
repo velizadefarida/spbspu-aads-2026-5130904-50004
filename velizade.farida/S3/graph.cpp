@@ -1,172 +1,212 @@
 #include "graph.hpp"
 #include <algorithm>
 
-velizade::Graph::Graph() :
-  vertices_(),
-  edges_(16, 4)
+velizade::Graph::Graph():
+    vertexes_(),
+    edges_(16, 4, 4)
 {}
 
 void velizade::Graph::addVertex(const std::string& v)
 {
-  for (size_t i = 0; i < vertices_.getSize(); ++i)
+  size_t left = 0, right = vertexes_.getSize();
+  while (left < right)
   {
-    if (vertices_[i] == v) return;
-  }
-  vertices_.pushBack(v);
-}
-
-bool velizade::Graph::hasVertex(const std::string& v) const
-{
-  for (size_t i = 0; i < vertices_.getSize(); ++i)
-  {
-    if (vertices_[i] == v) return true;
-  }
-  return false;
-}
-
-void velizade::Graph::addEdge(const std::string& from, const std::string& to, unsigned long long weight)
-{
-  addVertex(from);
-  addVertex(to);
-  EdgeKey key = {from, to};
-  if (edges_.has(key))
-  {
-    auto* cell = edges_.find(key);
-    if (cell)
+    size_t mid = left + (right - left) / 2;
+    if (vertexes_[mid] < v)
     {
-      cell->value.pushBack(weight);
+      left = mid + 1;
     }
+    else
+    {
+      right = mid;
+    }
+  }
+  if (left < vertexes_.getSize() && vertexes_[left] == v)
+  {
+    return;
+  }
+
+  Vector<std::string> newV = vertexes_;
+  newV.insert(left, v);
+  vertexes_.swap(newV);
+}
+
+bool velizade::Graph::hasVertex(const std::string& v) const noexcept
+{
+  size_t left = 0, right = vertexes_.getSize();
+  while (left < right)
+  {
+    size_t mid = left + (right - left) / 2;
+    if (vertexes_[mid] < v)
+    {
+      left = mid + 1;
+    }
+    else
+    {
+      right = mid;
+    }
+  }
+  return left < vertexes_.getSize() && vertexes_[left] == v;
+}
+
+void velizade::Graph::addEdge(const std::string& src, const std::string& dest, unsigned int weight)
+{
+  Graph copy = *this;
+  copy.addVertex(src);
+  copy.addVertex(dest);
+
+  auto key = std::make_pair(src, dest);
+  auto it = copy.edges_.find(key);
+  if (it != copy.edges_.end())
+  {
+    Vector<unsigned int> weights = it->second;
+    weights.pushBack(weight);
+    copy.edges_.add(key, weights);
   }
   else
   {
-    Vector<unsigned long long> weights;
+    Vector<unsigned int> weights;
     weights.pushBack(weight);
-    edges_.add(key, weights);
+    copy.edges_.add(key, weights);
   }
+
+  swap(copy);
 }
 
-bool velizade::Graph::removeEdge(const std::string& from, const std::string& to, unsigned long long weight)
+bool velizade::Graph::cutEdge(const std::string& src, const std::string& dest, unsigned int weight)
 {
-  if (!hasVertex(from) || !hasVertex(to)) return false;
-  EdgeKey key = {from, to};
-  auto* cell = edges_.find(key);
-  if (!cell) return false;
-  auto& vec = cell->value;
-  for (size_t i = 0; i < vec.getSize(); ++i)
+  auto key = std::make_pair(src, dest);
+  auto it = edges_.find(key);
+  if (it == edges_.end())
   {
-    if (vec[i] == weight)
+    return false;
+  }
+
+  Graph copy = *this;
+  auto it2 = copy.edges_.find(key);
+  Vector<unsigned int> weights = it2->second;
+  for (size_t i = 0; i < weights.getSize(); ++i)
+  {
+    if (weights[i] == weight)
     {
-      vec.erase(i);
-      if (vec.isEmpty()) edges_.drop(key);
+      weights.erase(i);
+      if (weights.isEmpty())
+      {
+        copy.edges_.drop(key);
+      }
+      else
+      {
+        copy.edges_.add(key, weights);
+      }
+      swap(copy);
       return true;
     }
   }
   return false;
 }
 
-velizade::Vector<std::string> velizade::Graph::getVertexes() const
-{
-  return vertices_;
-}
-
-void velizade::Graph::getOutbound(const std::string& v, Vector<std::pair<std::string, unsigned long long>>& out) const
-{
-  Vector<std::pair<std::string, unsigned long long>> temp;
-  for (auto it = edges_.begin(); it != edges_.end(); ++it)
-  {
-    auto kv = *it;
-    if (kv.first.first == v)
-    {
-      for (size_t i = 0; i < kv.second.getSize(); ++i)
-      {
-        temp.pushBack({kv.first.second, kv.second[i]});
-      }
-    }
-  }
-  out = sortPairs(temp);
-}
-
-void velizade::Graph::getInbound(const std::string& v, Vector<std::pair<std::string, unsigned long long>>& out) const
-{
-  Vector<std::pair<std::string, unsigned long long>> temp;
-  for (auto it = edges_.begin(); it != edges_.end(); ++it)
-  {
-    auto kv = *it;
-    if (kv.first.second == v)
-    {
-      for (size_t i = 0; i < kv.second.getSize(); ++i)
-      {
-        temp.pushBack({kv.first.first, kv.second[i]});
-      }
-    }
-  }
-  out = sortPairs(temp);
-}
-
 velizade::Graph velizade::Graph::merge(const Graph& other) const
 {
-  Graph result;
-  for (size_t i = 0; i < vertices_.getSize(); ++i)
+  Graph res = *this;
+  for (size_t i = 0; i < other.vertexes_.getSize(); ++i)
   {
-    result.addVertex(vertices_[i]);
+    res.addVertex(other.vertexes_[i]);
   }
-  for (size_t i = 0; i < other.vertices_.getSize(); ++i)
+
+  for (auto it = other.edges_.cbegin(); it != other.edges_.cend(); ++it)
   {
-    result.addVertex(other.vertices_[i]);
-  }
-  for (auto it = edges_.begin(); it != edges_.end(); ++it)
-  {
-    auto kv = *it;
-    for (size_t i = 0; i < kv.second.getSize(); ++i)
+    const auto& key = it->first;
+    const auto& weights = it->second;
+    for (size_t i = 0; i < weights.getSize(); ++i)
     {
-      result.addEdge(kv.first.first, kv.first.second, kv.second[i]);
+      res.addEdge(key.first, key.second, weights[i]);
     }
   }
-  for (auto it = other.edges_.begin(); it != other.edges_.end(); ++it)
-  {
-    auto kv = *it;
-    for (size_t i = 0; i < kv.second.getSize(); ++i)
-    {
-      result.addEdge(kv.first.first, kv.first.second, kv.second[i]);
-    }
-  }
-  return result;
+  return res;
 }
 
 velizade::Graph velizade::Graph::extract(const Vector<std::string>& vertices) const
 {
-  Graph result;
+  Graph res;
   for (size_t i = 0; i < vertices.getSize(); ++i)
   {
-    if (hasVertex(vertices[i]))
-    {
-      result.addVertex(vertices[i]);
-    }
+    res.addVertex(vertices[i]);
   }
-  for (auto it = edges_.begin(); it != edges_.end(); ++it)
+
+  for (auto it = edges_.cbegin(); it != edges_.cend(); ++it)
   {
-    auto kv = *it;
-    const std::string& from = kv.first.first;
-    const std::string& to = kv.first.second;
-    if (result.hasVertex(from) && result.hasVertex(to))
+    const auto& key = it->first;
+    if (res.hasVertex(key.first) && res.hasVertex(key.second))
     {
-      for (size_t i = 0; i < kv.second.getSize(); ++i)
+      const auto& weights = it->second;
+      for (size_t i = 0; i < weights.getSize(); ++i)
       {
-        result.addEdge(from, to, kv.second[i]);
+        res.addEdge(key.first, key.second, weights[i]);
       }
     }
   }
-  return result;
+  return res;
 }
 
-velizade::Vector<std::pair<std::string, unsigned long long>>
-velizade::Graph::sortPairs(const Vector<std::pair<std::string, unsigned long long>>& vec) const
+const velizade::Vector<std::string>& velizade::Graph::getVertexes() const noexcept
 {
-  Vector<std::pair<std::string, unsigned long long>> copy = vec;
-  std::sort(copy.begin(), copy.end(),
-    [](const auto& a, const auto& b) {
-      if (a.first != b.first) return a.first < b.first;
-      return a.second < b.second;
-    });
+  return vertexes_;
+}
+
+void velizade::Graph::getOutbound(const std::string& v, Vector<std::pair<std::string, unsigned int>>& out) const
+{
+  Vector<std::pair<std::string, unsigned int>> temp;
+  for (auto it = edges_.cbegin(); it != edges_.cend(); ++it)
+  {
+    if (it->first.first == v)
+    {
+      const auto& weights = it->second;
+      for (size_t i = 0; i < weights.getSize(); ++i)
+      {
+        temp.pushBack(std::make_pair(it->first.second, weights[i]));
+      }
+    }
+  }
+  out = sortPairs(temp);
+}
+
+void velizade::Graph::getInbound(const std::string& v, Vector<std::pair<std::string, unsigned int>>& out) const
+{
+  Vector<std::pair<std::string, unsigned int>> temp;
+  for (auto it = edges_.cbegin(); it != edges_.cend(); ++it)
+  {
+    if (it->first.second == v)
+    {
+      const auto& weights = it->second;
+      for (size_t i = 0; i < weights.getSize(); ++i)
+      {
+        temp.pushBack(std::make_pair(it->first.first, weights[i]));
+      }
+    }
+  }
+  out = sortPairs(temp);
+}
+
+velizade::Vector<std::pair<std::string, unsigned int>>
+velizade::Graph::sortPairs(const Vector<std::pair<std::string, unsigned int>>& vec) const
+{
+  Vector<std::pair<std::string, unsigned int>> copy = vec;
+  for (size_t i = 0; i < copy.getSize(); ++i)
+  {
+    for (size_t j = i + 1; j < copy.getSize(); ++j)
+    {
+      if (copy[j].first < copy[i].first ||
+          (copy[j].first == copy[i].first && copy[j].second < copy[i].second))
+      {
+        std::swap(copy[i], copy[j]);
+      }
+    }
+  }
   return copy;
+}
+
+void velizade::Graph::swap(Graph& other) noexcept
+{
+  vertexes_.swap(other.vertexes_);
+  edges_.swap(other.edges_);
 }
