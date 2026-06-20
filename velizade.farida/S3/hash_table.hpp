@@ -27,6 +27,13 @@ namespace velizade
   class HashTable
   {
   public:
+    struct Cell
+    {
+      Key key;
+      Value value;
+      bool occupied = false;
+    };
+
     using key_type = Key;
     using value_type = Value;
     using hasher = Hash;
@@ -60,13 +67,6 @@ namespace velizade
     const Cell* find(const Key& k) const;
 
   private:
-    struct Cell
-    {
-      Key key;
-      Value value;
-      bool occupied = false;
-    };
-
     size_t numBuckets_;
     size_t bucketSize_;
     Cell* table_;
@@ -80,7 +80,6 @@ namespace velizade
     Cell* findInOverflow(const Key& k);
     const Cell* findInOverflow(const Key& k) const;
   };
-
 }
 
 template<class Key, class Value, class Hash, class Equal>

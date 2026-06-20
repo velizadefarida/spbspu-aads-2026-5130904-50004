@@ -25,11 +25,6 @@ static const velizade::Graph& getGraphCheckedConst(const std::string& name)
   return cell->value;
 }
 
-static void sortStrings(velizade::Vector<std::string>& vec)
-{
-  std::sort(vec.begin(), vec.end());
-}
-
 struct OutEntry
 {
   std::string vertex;
@@ -56,7 +51,7 @@ void velizade::cmdGraphs(std::istream& in, std::ostream& out)
     auto kv = *it;
     names.pushBack(kv.first);
   }
-  sortStrings(names);
+  std::sort(names.begin(), names.end());
   for (size_t i = 0; i < names.getSize(); ++i)
   {
     out << names[i] << "\n";
@@ -78,7 +73,7 @@ void velizade::cmdVertexes(std::istream& in, std::ostream& out)
 
   const auto& g = getGraphCheckedConst(graphName);
   Vector<std::string> vlist = g.vertices;
-  sortStrings(vlist);
+  std::sort(vlist.begin(), vlist.end());
   for (size_t i = 0; i < vlist.getSize(); ++i)
   {
     out << vlist[i] << "\n";
@@ -175,6 +170,7 @@ void velizade::cmdInbound(std::istream& in, std::ostream& out)
 
 void velizade::cmdBind(std::istream& in, std::ostream& out)
 {
+  (void)out;
   std::string graphName, from, to;
   int weight;
   if (!(in >> graphName >> from >> to >> weight))
@@ -195,6 +191,7 @@ void velizade::cmdBind(std::istream& in, std::ostream& out)
 
 void velizade::cmdCut(std::istream& in, std::ostream& out)
 {
+  (void)out;
   std::string graphName, from, to;
   int weight;
   if (!(in >> graphName >> from >> to >> weight))
@@ -220,6 +217,7 @@ void velizade::cmdCut(std::istream& in, std::ostream& out)
 
 void velizade::cmdCreate(std::istream& in, std::ostream& out)
 {
+  (void)out;
   std::string graphName;
   size_t count;
   if (!(in >> graphName >> count))
@@ -257,6 +255,7 @@ void velizade::cmdCreate(std::istream& in, std::ostream& out)
 
 void velizade::cmdMerge(std::istream& in, std::ostream& out)
 {
+  (void)out;
   std::string newName, g1, g2;
   if (!(in >> newName >> g1 >> g2))
   {
@@ -309,6 +308,7 @@ void velizade::cmdMerge(std::istream& in, std::ostream& out)
 
 void velizade::cmdExtract(std::istream& in, std::ostream& out)
 {
+  (void)out;
   std::string newName, oldName;
   size_t count;
   if (!(in >> newName >> oldName >> count))
