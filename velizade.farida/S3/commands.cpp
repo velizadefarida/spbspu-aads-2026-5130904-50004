@@ -1,442 +1,318 @@
 #include "commands.hpp"
-#include <algorithm>
+#include <iostream>
+#include <fstream>
 #include <stdexcept>
-#include <sstream>
-#include <cstdlib>
+#include <algorithm>
 
-static velizade::Graph& getGraphChecked(const std::string& name)
+namespace velizade
 {
-  auto& graphs = velizade::getGraphs();
-  auto* cell = graphs.find(name);
-  if (!cell)
-  {
-    throw std::runtime_error("Graph not found");
-  }
-  return cell->value;
-}
 
-static const velizade::Graph& getGraphCheckedConst(const std::string& name)
-{
-  auto& graphs = velizade::getGraphs();
-  const auto* cell = graphs.find(name);
-  if (!cell)
+  template<class T>
+  void sortVector(Vector<T>& vec)
   {
-    throw std::runtime_error("Graph not found");
+    std::sort(vec.begin(), vec.end());
   }
-  return cell->value;
-}
 
-static unsigned long long parseUInt(const std::string& s)
-{
-  if (s.empty())
+  Vector<std::string> splitString(const std::string& str)
   {
-    throw std::runtime_error("Invalid number");
-  }
-  unsigned long long res = 0;
-  for (size_t i = 0; i < s.size(); ++i)
-  {
-    if (s[i] < '0' || s[i] > '9')
+    Vector<std::string> res;
+    std::string current;
+    for (size_t i = 0; i < str.size(); ++i)
     {
-      throw std::runtime_error("Invalid number");
+      if (str[i] == ' ' || str[i] == '\r' || str[i] == '\n' || str[i] == '\t')
+      {
+        if (!current.empty())
+        {
+          res.pushBack(current);
+          current.clear();
+        }
+      }
+      else
+      {
+        current += str[i];
+      }
     }
-    res = res * 10 + (s[i] - '0');
+    if (!current.empty())
+    {
+      res.pushBack(current);
+    }
+    return res;
   }
-  return res;
-}
 
-struct OutEntry
-{
-  std::string vertex;
-  velizade::Vector<unsigned long long> weights;
-};
-
-static bool cmpOutEntry(const OutEntry& a, const OutEntry& b)
-{
-  return a.vertex < b.vertex;
-}
-
-void velizade::cmdGraphs(const Vector<std::string>& args, std::ostream& out)
-{
-  if (!args.isEmpty())
+  bool tryParseUInt(const std::string& str, unsigned long long& out)
   {
-    throw std::runtime_error("Invalid arguments");
+    if (str.empty()) return false;
+    unsigned long long res = 0;
+    for (size_t i = 0; i < str.size(); ++i)
+    {
+      if (str[i] < '0' || str[i] > '9') return false;
+      res = res * 10 + (str[i] - '0');
+    }
+    out = res;
+    return true;
   }
 
-  auto& graphs = getGraphs();
+  void throwInvalid()
+  {
+    throw std::invalid_argument("INVALID COMMAND");
+  }
+
+}
+
+velizade::Application::Application() :
+  commands_(16),
+  graphs_(16)
+{
+  commands_.add("graphs", &Application::cmdGraphs);
+  commands_.add("vertexes", &Application::cmdVertexes);
+  commands_.add("outbound", &Application::cmdOutbound);
+  commands_.add("inbound", &Application::cmdInbound);
+  commands_.add("bind", &Application::cmdBind);
+  commands_.add("cut", &Application::cmdCut);
+  commands_.add("create", &Application::cmdCreate);
+  commands_.add("merge", &Application::cmdMerge);
+  commands_.add("extract", &Application::cmdExtract);
+}
+
+void velizade::Application::loadFromFile(const std::string& filename)
+{
+  std::ifstream file(filename);
+  if (!file.is_open())
+  {
+    throw std::runtime_error("Cannot open file");
+  }
+
+  std::string line;
+  while (std::getline(file, line))
+  {
+    Vector<std::string> tokens = splitString(line);
+    if (tokens.isEmpty()) continue;
+    if (tokens.getSize() == 2)
+    {
+      std::string graphName = tokens[0];
+      unsigned long long edgeCount = 0;
+      if (!tryParseUInt(tokens[1], edgeCount)) continue;
+      Graph g;
+      for (size_t i = 0; i < edgeCount; ++i)
+      {
+        std::string edgeLine;
+        if (std::getline(file, edgeLine))
+        {
+          Vector<std::string> edgeTokens = splitString(edgeLine);
+          if (edgeTokens.getSize() >= 3)
+          {
+            std::string src = edgeTokens[0];
+            std::string dest = edgeTokens[1];
+            unsigned long long weight;
+            if (tryParseUInt(edgeTokens[2], weight))
+            {
+              g.addEdge(src, dest, weight);
+            }
+          }
+        }
+      }
+      if (graphs_.has(graphName))
+      {
+        throw std::runtime_error("Duplicate graph name");
+      }
+      graphs_.add(graphName, g);
+    }
+  }
+}
+
+void velizade::Application::run(const std::string& filename)
+{
+  loadFromFile(filename);
+  std::string line;
+  while (std::getline(std::cin, line))
+  {
+    processLine(line);
+  }
+}
+
+void velizade::Application::processLine(const std::string& line)
+{
+  Vector<std::string> tokens = splitString(line);
+  if (tokens.isEmpty()) return;
+  auto* cell = commands_.find(tokens[0]);
+  if (cell)
+  {
+    try
+    {
+      cell->value(this, tokens);
+    }
+    catch (const std::exception&)
+    {
+      std::cout << "<INVALID COMMAND>\n";
+    }
+  }
+  else
+  {
+    std::cout << "<INVALID COMMAND>\n";
+  }
+}
+
+void velizade::Application::cmdGraphs(Application* app, const Vector<std::string>& args)
+{
+  if (args.getSize() != 1) throwInvalid();
   Vector<std::string> names;
-  for (auto it = graphs.begin(); it != graphs.end(); ++it)
+  for (auto it = app->graphs_.begin(); it != app->graphs_.end(); ++it)
   {
     auto kv = *it;
     names.pushBack(kv.first);
   }
-  std::sort(names.begin(), names.end());
   if (names.getSize() == 0)
   {
-    out << '\n';
+    std::cout << '\n';
+    return;
   }
-  else
+  sortVector(names);
+  for (size_t i = 0; i < names.getSize(); ++i)
   {
-    for (size_t i = 0; i < names.getSize(); ++i)
-    {
-      out << names[i] << '\n';
-    }
+    std::cout << names[i] << '\n';
   }
 }
 
-void velizade::cmdVertexes(const Vector<std::string>& args, std::ostream& out)
+void velizade::Application::cmdVertexes(Application* app, const Vector<std::string>& args)
 {
-  if (args.getSize() != 1)
+  if (args.getSize() != 2) throwInvalid();
+  auto* cell = app->graphs_.find(args[1]);
+  if (!cell) throwInvalid();
+  Vector<std::string> verts = cell->value.getVertexes();
+  if (verts.getSize() == 0)
   {
-    throw std::runtime_error("Invalid arguments");
+    std::cout << '\n';
+    return;
   }
-
-  const auto& g = getGraphCheckedConst(args[0]);
-  Vector<std::string> vlist = g.vertices;
-  std::sort(vlist.begin(), vlist.end());
-  if (vlist.getSize() == 0)
+  sortVector(verts);
+  for (size_t i = 0; i < verts.getSize(); ++i)
   {
-    out << '\n';
-  }
-  else
-  {
-    for (size_t i = 0; i < vlist.getSize(); ++i)
-    {
-      out << vlist[i] << '\n';
-    }
+    std::cout << verts[i] << '\n';
   }
 }
 
-void velizade::cmdOutbound(const Vector<std::string>& args, std::ostream& out)
+void velizade::Application::cmdOutbound(Application* app, const Vector<std::string>& args)
 {
-  if (args.getSize() != 2)
+  if (args.getSize() != 3) throwInvalid();
+  auto* cell = app->graphs_.find(args[1]);
+  if (!cell || !cell->value.hasVertex(args[2])) throwInvalid();
+  Vector<std::pair<std::string, unsigned long long>> res;
+  cell->value.getOutbound(args[2], res);
+  if (res.getSize() == 0)
   {
-    throw std::runtime_error("Invalid arguments");
+    std::cout << '\n';
+    return;
   }
-
-  const auto& g = getGraphCheckedConst(args[0]);
-  const std::string& vertex = args[1];
-  if (!g.hasVertex(vertex))
+  std::string currentV = res[0].first;
+  std::cout << currentV << ' ' << res[0].second;
+  for (size_t i = 1; i < res.getSize(); ++i)
   {
-    throw std::runtime_error("Vertex not found");
-  }
-
-  Vector<OutEntry> entries;
-  for (auto it = g.edges.begin(); it != g.edges.end(); ++it)
-  {
-    auto kv = *it;
-    if (kv.first.first == vertex)
+    if (res[i].first == currentV)
     {
-      OutEntry e;
-      e.vertex = kv.first.second;
-      e.weights = kv.second;
-      std::sort(e.weights.begin(), e.weights.end());
-      entries.pushBack(e);
+      std::cout << ' ' << res[i].second;
+    }
+    else
+    {
+      currentV = res[i].first;
+      std::cout << '\n' << currentV << ' ' << res[i].second;
     }
   }
-  std::sort(entries.begin(), entries.end(), cmpOutEntry);
-  if (entries.getSize() == 0)
+  std::cout << '\n';
+}
+
+void velizade::Application::cmdInbound(Application* app, const Vector<std::string>& args)
+{
+  if (args.getSize() != 3) throwInvalid();
+  auto* cell = app->graphs_.find(args[1]);
+  if (!cell || !cell->value.hasVertex(args[2])) throwInvalid();
+  Vector<std::pair<std::string, unsigned long long>> res;
+  cell->value.getInbound(args[2], res);
+  if (res.getSize() == 0)
   {
-    out << '\n';
+    std::cout << '\n';
+    return;
   }
-  else
+  std::string currentV = res[0].first;
+  std::cout << currentV << ' ' << res[0].second;
+  for (size_t i = 1; i < res.getSize(); ++i)
   {
-    for (size_t i = 0; i < entries.getSize(); ++i)
+    if (res[i].first == currentV)
     {
-      out << entries[i].vertex;
-      for (size_t j = 0; j < entries[i].weights.getSize(); ++j)
-      {
-        out << ' ' << entries[i].weights[j];
-      }
-      out << '\n';
+      std::cout << ' ' << res[i].second;
+    }
+    else
+    {
+      currentV = res[i].first;
+      std::cout << '\n' << currentV << ' ' << res[i].second;
     }
   }
+  std::cout << '\n';
 }
 
-void velizade::cmdInbound(const Vector<std::string>& args, std::ostream& out)
+void velizade::Application::cmdBind(Application* app, const Vector<std::string>& args)
 {
-  if (args.getSize() != 2)
-  {
-    throw std::runtime_error("Invalid arguments");
-  }
-
-  const auto& g = getGraphCheckedConst(args[0]);
-  const std::string& vertex = args[1];
-  if (!g.hasVertex(vertex))
-  {
-    throw std::runtime_error("Vertex not found");
-  }
-
-  Vector<OutEntry> entries;
-  for (auto it = g.edges.begin(); it != g.edges.end(); ++it)
-  {
-    auto kv = *it;
-    if (kv.first.second == vertex)
-    {
-      OutEntry e;
-      e.vertex = kv.first.first;
-      e.weights = kv.second;
-      std::sort(e.weights.begin(), e.weights.end());
-      entries.pushBack(e);
-    }
-  }
-  std::sort(entries.begin(), entries.end(), cmpOutEntry);
-  if (entries.getSize() == 0)
-  {
-    out << '\n';
-  }
-  else
-  {
-    for (size_t i = 0; i < entries.getSize(); ++i)
-    {
-      out << entries[i].vertex;
-      for (size_t j = 0; j < entries[i].weights.getSize(); ++j)
-      {
-        out << ' ' << entries[i].weights[j];
-      }
-      out << '\n';
-    }
-  }
+  unsigned long long weight = 0;
+  if (args.getSize() != 5 || !tryParseUInt(args[4], weight)) throwInvalid();
+  auto* cell = app->graphs_.find(args[1]);
+  if (!cell) throwInvalid();
+  cell->value.addEdge(args[2], args[3], weight);
 }
 
-void velizade::cmdBind(const Vector<std::string>& args, std::ostream& out)
+void velizade::Application::cmdCut(Application* app, const Vector<std::string>& args)
 {
-  (void)out;
-  if (args.getSize() != 4)
-  {
-    throw std::runtime_error("Invalid arguments");
-  }
-
-  std::string graphName = args[0];
-  std::string from = args[1];
-  std::string to = args[2];
-  unsigned long long weight = parseUInt(args[3]);
-
-  auto& g = getGraphChecked(graphName);
-  g.addVertex(from);
-  g.addVertex(to);
-  g.addEdge(from, to, weight);
+  unsigned long long weight = 0;
+  if (args.getSize() != 5 || !tryParseUInt(args[4], weight)) throwInvalid();
+  auto* cell = app->graphs_.find(args[1]);
+  if (!cell || !cell->value.removeEdge(args[2], args[3], weight)) throwInvalid();
 }
 
-void velizade::cmdCut(const Vector<std::string>& args, std::ostream& out)
+void velizade::Application::cmdCreate(Application* app, const Vector<std::string>& args)
 {
-  (void)out;
-  if (args.getSize() != 4)
-  {
-    throw std::runtime_error("Invalid arguments");
-  }
-
-  std::string graphName = args[0];
-  std::string from = args[1];
-  std::string to = args[2];
-  unsigned long long weight = parseUInt(args[3]);
-
-  auto& g = getGraphChecked(graphName);
-  if (!g.hasVertex(from) || !g.hasVertex(to))
-  {
-    throw std::runtime_error("Vertex not found");
-  }
-  if (!g.removeEdge(from, to, weight))
-  {
-    throw std::runtime_error("Edge not found");
-  }
-}
-
-void velizade::cmdCreate(const Vector<std::string>& args, std::ostream& out)
-{
-  (void)out;
-  if (args.getSize() < 2)
-  {
-    throw std::runtime_error("Invalid arguments");
-  }
-
-  std::string graphName = args[0];
-  size_t count = parseUInt(args[1]);
-  if (args.getSize() != 2 + count)
-  {
-    throw std::runtime_error("Invalid arguments");
-  }
-
-  auto& graphs = getGraphs();
-  if (graphs.has(graphName))
-  {
-    throw std::runtime_error("Graph already exists");
-  }
-
-  Graph newGraph(graphName);
+  unsigned long long count = 0;
+  if (args.getSize() < 3 || !tryParseUInt(args[2], count) || args.getSize() != 3 + count) throwInvalid();
+  if (app->graphs_.has(args[1])) throwInvalid();
   for (size_t i = 0; i < count; ++i)
   {
-    newGraph.addVertex(args[2 + i]);
-  }
-  graphs.add(graphName, std::move(newGraph));
-}
-
-void velizade::cmdMerge(const Vector<std::string>& args, std::ostream& out)
-{
-  (void)out;
-  if (args.getSize() != 3)
-  {
-    throw std::runtime_error("Invalid arguments");
-  }
-
-  std::string newName = args[0];
-  std::string g1 = args[1];
-  std::string g2 = args[2];
-
-  auto& graphs = getGraphs();
-  if (graphs.has(newName))
-  {
-    throw std::runtime_error("Graph already exists");
-  }
-  const auto& gr1 = getGraphCheckedConst(g1);
-  const auto& gr2 = getGraphCheckedConst(g2);
-
-  Graph merged(newName);
-  for (size_t i = 0; i < gr1.vertices.getSize(); ++i)
-  {
-    merged.addVertex(gr1.vertices[i]);
-  }
-  for (size_t i = 0; i < gr2.vertices.getSize(); ++i)
-  {
-    merged.addVertex(gr2.vertices[i]);
-  }
-
-  for (auto it = gr1.edges.begin(); it != gr1.edges.end(); ++it)
-  {
-    auto kv = *it;
-    const auto& weights = kv.second;
-    for (size_t i = 0; i < weights.getSize(); ++i)
+    for (size_t j = i + 1; j < count; ++j)
     {
-      merged.addEdge(kv.first.first, kv.first.second, weights[i]);
+      if (args[3 + i] == args[3 + j]) throwInvalid();
     }
   }
-  for (auto it = gr2.edges.begin(); it != gr2.edges.end(); ++it)
-  {
-    auto kv = *it;
-    const auto& weights = kv.second;
-    for (size_t i = 0; i < weights.getSize(); ++i)
-    {
-      merged.addEdge(kv.first.first, kv.first.second, weights[i]);
-    }
-  }
-  graphs.add(newName, std::move(merged));
-}
-
-void velizade::cmdExtract(const Vector<std::string>& args, std::ostream& out)
-{
-  (void)out;
-  if (args.getSize() < 3)
-  {
-    throw std::runtime_error("Invalid arguments");
-  }
-
-  std::string newName = args[0];
-  std::string oldName = args[1];
-  size_t count = parseUInt(args[2]);
-  if (args.getSize() != 3 + count)
-  {
-    throw std::runtime_error("Invalid arguments");
-  }
-
-  auto& graphs = getGraphs();
-  if (graphs.has(newName))
-  {
-    throw std::runtime_error("Graph already exists");
-  }
-  const auto& old = getGraphCheckedConst(oldName);
-
-  Vector<std::string> selected;
+  Graph newG;
   for (size_t i = 0; i < count; ++i)
   {
-    std::string v = args[3 + i];
-    if (!old.hasVertex(v))
-    {
-      throw std::runtime_error("Vertex not found in source");
-    }
-    selected.pushBack(v);
+    newG.addVertex(args[3 + i]);
   }
-  for (size_t i = 0; i < selected.getSize(); ++i)
-  {
-    for (size_t j = i + 1; j < selected.getSize(); ++j)
-    {
-      if (selected[i] == selected[j])
-      {
-        throw std::runtime_error("Duplicate vertices");
-      }
-    }
-  }
-
-  Graph extracted(newName);
-  for (size_t i = 0; i < selected.getSize(); ++i)
-  {
-    extracted.addVertex(selected[i]);
-  }
-
-  for (auto it = old.edges.begin(); it != old.edges.end(); ++it)
-  {
-    auto kv = *it;
-    const std::string& from = kv.first.first;
-    const std::string& to = kv.first.second;
-    bool hasFrom = false, hasTo = false;
-    for (size_t i = 0; i < selected.getSize(); ++i)
-    {
-      if (selected[i] == from)
-      {
-        hasFrom = true;
-      }
-      if (selected[i] == to)
-      {
-        hasTo = true;
-      }
-      if (hasFrom && hasTo)
-      {
-        break;
-      }
-    }
-    if (hasFrom && hasTo)
-    {
-      const auto& weights = kv.second;
-      for (size_t i = 0; i < weights.getSize(); ++i)
-      {
-        extracted.addEdge(from, to, weights[i]);
-      }
-    }
-  }
-  graphs.add(newName, std::move(extracted));
+  app->graphs_.add(args[1], newG);
 }
 
-velizade::CommandManager::CommandManager() :
-  cmds_(32, 4)
+void velizade::Application::cmdMerge(Application* app, const Vector<std::string>& args)
 {
-  cmds_.add("graphs", cmdGraphs);
-  cmds_.add("vertexes", cmdVertexes);
-  cmds_.add("outbound", cmdOutbound);
-  cmds_.add("inbound", cmdInbound);
-  cmds_.add("bind", cmdBind);
-  cmds_.add("cut", cmdCut);
-  cmds_.add("create", cmdCreate);
-  cmds_.add("merge", cmdMerge);
-  cmds_.add("extract", cmdExtract);
+  if (args.getSize() != 4 || app->graphs_.has(args[1])) throwInvalid();
+  auto* cell1 = app->graphs_.find(args[2]);
+  auto* cell2 = app->graphs_.find(args[3]);
+  if (!cell1 || !cell2) throwInvalid();
+  Graph merged = cell1->value.merge(cell2->value);
+  app->graphs_.add(args[1], merged);
 }
 
-bool velizade::CommandManager::cmd(const std::string& name, const Vector<std::string>& args, std::ostream& out) const
+void velizade::Application::cmdExtract(Application* app, const Vector<std::string>& args)
 {
-  auto* cell = cmds_.find(name);
-  if (!cell)
+  if (args.getSize() < 4 || app->graphs_.has(args[1])) throwInvalid();
+  auto* cell = app->graphs_.find(args[2]);
+  unsigned long long count = 0;
+  if (!cell || !tryParseUInt(args[3], count) || args.getSize() != 4 + count) throwInvalid();
+  Vector<std::string> vertsToExtract;
+  for (size_t i = 0; i < count; ++i)
   {
-    return false;
+    std::string v = args[4 + i];
+    for (size_t j = i + 1; j < count; ++j)
+    {
+      if (v == args[4 + j]) throwInvalid();
+    }
+    if (!cell->value.hasVertex(v)) throwInvalid();
+    vertsToExtract.pushBack(v);
   }
-  try
-  {
-    cell->value(args, out);
-  }
-  catch (const std::exception&)
-  {
-    out << "<INVALID COMMAND>\n";
-  }
-  return true;
-}
-
-void velizade::CommandManager::addCommand(const std::string& name, func_t cmd)
-{
-  cmds_.add(name, cmd);
+  Graph extracted = cell->value.extract(vertsToExtract);
+  app->graphs_.add(args[1], extracted);
 }

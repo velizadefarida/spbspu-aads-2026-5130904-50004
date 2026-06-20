@@ -3,7 +3,6 @@
 
 #include <string>
 #include <utility>
-#include <functional>
 #include "hash_table.hpp"
 #include "vector.hpp"
 
@@ -15,27 +14,27 @@ namespace velizade
 
   struct Graph
   {
-    std::string name;
-    Vector<std::string> vertices;
-    EdgeTable edges;
-
     Graph();
-    explicit Graph(const std::string& n);
 
     void addVertex(const std::string& v);
+    bool hasVertex(const std::string& v) const;
     void addEdge(const std::string& from, const std::string& to, unsigned long long weight);
     bool removeEdge(const std::string& from, const std::string& to, unsigned long long weight);
-    bool hasVertex(const std::string& v) const;
+
+    Vector<std::string> getVertexes() const;
+    void getOutbound(const std::string& v, Vector<std::pair<std::string, unsigned long long>>& out) const;
+    void getInbound(const std::string& v, Vector<std::pair<std::string, unsigned long long>>& out) const;
+
+    Graph merge(const Graph& other) const;
+    Graph extract(const Vector<std::string>& vertices) const;
+
+  private:
+    Vector<std::string> vertices_;
+    EdgeTable edges_;
+
+    Vector<std::pair<std::string, unsigned long long>>
+      sortPairs(const Vector<std::pair<std::string, unsigned long long>>& vec) const;
   };
-
-  using GraphTable = HashTable<std::string, Graph>;
-  GraphTable& getGraphs();
-
-  void loadGraphsFromFile(const std::string& filename);
-
-  Vector<std::string> splitLine(const std::string& line);
-  void sortStrings(Vector<std::string>& vec);
-  void printLines(const Vector<std::string>& lines);
 
 }
 
