@@ -31,11 +31,6 @@ namespace velizade
   GraphTable& getGraphs();
 
   void loadGraphsFromFile(const std::string& filename);
-
-  Vector<std::string> splitLine(const std::string& line);
-  void sortStrings(Vector<std::string>& vec);
-  void printLines(const Vector<std::string>& lines);
-
 }
 
 #endif
