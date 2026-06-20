@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <sstream>
+#include <cstdlib>
 
 static velizade::Graph& getGraphChecked(const std::string& name)
 {
@@ -25,6 +26,24 @@ static const velizade::Graph& getGraphCheckedConst(const std::string& name)
   return cell->value;
 }
 
+static unsigned long long parseUInt(const std::string& s)
+{
+  if (s.empty())
+  {
+    throw std::runtime_error("Invalid number");
+  }
+  unsigned long long res = 0;
+  for (size_t i = 0; i < s.size(); ++i)
+  {
+    if (s[i] < '0' || s[i] > '9')
+    {
+      throw std::runtime_error("Invalid number");
+    }
+    res = res * 10 + (s[i] - '0');
+  }
+  return res;
+}
+
 struct OutEntry
 {
   std::string vertex;
@@ -36,10 +55,9 @@ static bool cmpOutEntry(const OutEntry& a, const OutEntry& b)
   return a.vertex < b.vertex;
 }
 
-void velizade::cmdGraphs(std::istream& in, std::ostream& out)
+void velizade::cmdGraphs(const Vector<std::string>& args, std::ostream& out)
 {
-  std::string dummy;
-  if (in >> dummy)
+  if (!args.isEmpty())
   {
     throw std::runtime_error("Invalid arguments");
   }
@@ -65,20 +83,14 @@ void velizade::cmdGraphs(std::istream& in, std::ostream& out)
   }
 }
 
-void velizade::cmdVertexes(std::istream& in, std::ostream& out)
+void velizade::cmdVertexes(const Vector<std::string>& args, std::ostream& out)
 {
-  std::string graphName;
-  if (!(in >> graphName))
-  {
-    throw std::runtime_error("Invalid arguments");
-  }
-  std::string dummy;
-  if (in >> dummy)
+  if (args.getSize() != 1)
   {
     throw std::runtime_error("Invalid arguments");
   }
 
-  const auto& g = getGraphCheckedConst(graphName);
+  const auto& g = getGraphCheckedConst(args[0]);
   Vector<std::string> vlist = g.vertices;
   std::sort(vlist.begin(), vlist.end());
   if (vlist.getSize() == 0)
@@ -94,20 +106,15 @@ void velizade::cmdVertexes(std::istream& in, std::ostream& out)
   }
 }
 
-void velizade::cmdOutbound(std::istream& in, std::ostream& out)
+void velizade::cmdOutbound(const Vector<std::string>& args, std::ostream& out)
 {
-  std::string graphName, vertex;
-  if (!(in >> graphName >> vertex))
-  {
-    throw std::runtime_error("Invalid arguments");
-  }
-  std::string dummy;
-  if (in >> dummy)
+  if (args.getSize() != 2)
   {
     throw std::runtime_error("Invalid arguments");
   }
 
-  const auto& g = getGraphCheckedConst(graphName);
+  const auto& g = getGraphCheckedConst(args[0]);
+  const std::string& vertex = args[1];
   if (!g.hasVertex(vertex))
   {
     throw std::runtime_error("Vertex not found");
@@ -145,20 +152,15 @@ void velizade::cmdOutbound(std::istream& in, std::ostream& out)
   }
 }
 
-void velizade::cmdInbound(std::istream& in, std::ostream& out)
+void velizade::cmdInbound(const Vector<std::string>& args, std::ostream& out)
 {
-  std::string graphName, vertex;
-  if (!(in >> graphName >> vertex))
-  {
-    throw std::runtime_error("Invalid arguments");
-  }
-  std::string dummy;
-  if (in >> dummy)
+  if (args.getSize() != 2)
   {
     throw std::runtime_error("Invalid arguments");
   }
 
-  const auto& g = getGraphCheckedConst(graphName);
+  const auto& g = getGraphCheckedConst(args[0]);
+  const std::string& vertex = args[1];
   if (!g.hasVertex(vertex))
   {
     throw std::runtime_error("Vertex not found");
@@ -196,20 +198,18 @@ void velizade::cmdInbound(std::istream& in, std::ostream& out)
   }
 }
 
-void velizade::cmdBind(std::istream& in, std::ostream& out)
+void velizade::cmdBind(const Vector<std::string>& args, std::ostream& out)
 {
   (void)out;
-  std::string graphName, from, to;
-  unsigned long long weight;
-  if (!(in >> graphName >> from >> to >> weight))
+  if (args.getSize() != 4)
   {
     throw std::runtime_error("Invalid arguments");
   }
-  std::string dummy;
-  if (in >> dummy)
-  {
-    throw std::runtime_error("Invalid arguments");
-  }
+
+  std::string graphName = args[0];
+  std::string from = args[1];
+  std::string to = args[2];
+  unsigned long long weight = parseUInt(args[3]);
 
   auto& g = getGraphChecked(graphName);
   g.addVertex(from);
@@ -217,20 +217,18 @@ void velizade::cmdBind(std::istream& in, std::ostream& out)
   g.addEdge(from, to, weight);
 }
 
-void velizade::cmdCut(std::istream& in, std::ostream& out)
+void velizade::cmdCut(const Vector<std::string>& args, std::ostream& out)
 {
   (void)out;
-  std::string graphName, from, to;
-  unsigned long long weight;
-  if (!(in >> graphName >> from >> to >> weight))
+  if (args.getSize() != 4)
   {
     throw std::runtime_error("Invalid arguments");
   }
-  std::string dummy;
-  if (in >> dummy)
-  {
-    throw std::runtime_error("Invalid arguments");
-  }
+
+  std::string graphName = args[0];
+  std::string from = args[1];
+  std::string to = args[2];
+  unsigned long long weight = parseUInt(args[3]);
 
   auto& g = getGraphChecked(graphName);
   if (!g.hasVertex(from) || !g.hasVertex(to))
@@ -243,27 +241,17 @@ void velizade::cmdCut(std::istream& in, std::ostream& out)
   }
 }
 
-void velizade::cmdCreate(std::istream& in, std::ostream& out)
+void velizade::cmdCreate(const Vector<std::string>& args, std::ostream& out)
 {
   (void)out;
-  std::string graphName;
-  size_t count;
-  if (!(in >> graphName >> count))
+  if (args.getSize() < 2)
   {
     throw std::runtime_error("Invalid arguments");
   }
-  Vector<std::string> vertices;
-  for (size_t i = 0; i < count; ++i)
-  {
-    std::string v;
-    if (!(in >> v))
-    {
-      throw std::runtime_error("Invalid arguments");
-    }
-    vertices.pushBack(v);
-  }
-  std::string dummy;
-  if (in >> dummy)
+
+  std::string graphName = args[0];
+  size_t count = parseUInt(args[1]);
+  if (args.getSize() != 2 + count)
   {
     throw std::runtime_error("Invalid arguments");
   }
@@ -273,27 +261,26 @@ void velizade::cmdCreate(std::istream& in, std::ostream& out)
   {
     throw std::runtime_error("Graph already exists");
   }
+
   Graph newGraph(graphName);
-  for (size_t i = 0; i < vertices.getSize(); ++i)
+  for (size_t i = 0; i < count; ++i)
   {
-    newGraph.addVertex(vertices[i]);
+    newGraph.addVertex(args[2 + i]);
   }
   graphs.add(graphName, std::move(newGraph));
 }
 
-void velizade::cmdMerge(std::istream& in, std::ostream& out)
+void velizade::cmdMerge(const Vector<std::string>& args, std::ostream& out)
 {
   (void)out;
-  std::string newName, g1, g2;
-  if (!(in >> newName >> g1 >> g2))
+  if (args.getSize() != 3)
   {
     throw std::runtime_error("Invalid arguments");
   }
-  std::string dummy;
-  if (in >> dummy)
-  {
-    throw std::runtime_error("Invalid arguments");
-  }
+
+  std::string newName = args[0];
+  std::string g1 = args[1];
+  std::string g2 = args[2];
 
   auto& graphs = getGraphs();
   if (graphs.has(newName))
@@ -334,27 +321,18 @@ void velizade::cmdMerge(std::istream& in, std::ostream& out)
   graphs.add(newName, std::move(merged));
 }
 
-void velizade::cmdExtract(std::istream& in, std::ostream& out)
+void velizade::cmdExtract(const Vector<std::string>& args, std::ostream& out)
 {
   (void)out;
-  std::string newName, oldName;
-  size_t count;
-  if (!(in >> newName >> oldName >> count))
+  if (args.getSize() < 3)
   {
     throw std::runtime_error("Invalid arguments");
   }
-  Vector<std::string> selected;
-  for (size_t i = 0; i < count; ++i)
-  {
-    std::string v;
-    if (!(in >> v))
-    {
-      throw std::runtime_error("Invalid arguments");
-    }
-    selected.pushBack(v);
-  }
-  std::string dummy;
-  if (in >> dummy)
+
+  std::string newName = args[0];
+  std::string oldName = args[1];
+  size_t count = parseUInt(args[2]);
+  if (args.getSize() != 3 + count)
   {
     throw std::runtime_error("Invalid arguments");
   }
@@ -366,12 +344,15 @@ void velizade::cmdExtract(std::istream& in, std::ostream& out)
   }
   const auto& old = getGraphCheckedConst(oldName);
 
-  for (size_t i = 0; i < selected.getSize(); ++i)
+  Vector<std::string> selected;
+  for (size_t i = 0; i < count; ++i)
   {
-    if (!old.hasVertex(selected[i]))
+    std::string v = args[3 + i];
+    if (!old.hasVertex(v))
     {
       throw std::runtime_error("Vertex not found in source");
     }
+    selected.pushBack(v);
   }
   for (size_t i = 0; i < selected.getSize(); ++i)
   {
@@ -437,7 +418,7 @@ velizade::CommandManager::CommandManager() :
   cmds_.add("extract", cmdExtract);
 }
 
-bool velizade::CommandManager::cmd(const std::string& name, std::istream& in, std::ostream& out) const
+bool velizade::CommandManager::cmd(const std::string& name, const Vector<std::string>& args, std::ostream& out) const
 {
   auto* cell = cmds_.find(name);
   if (!cell)
@@ -446,7 +427,7 @@ bool velizade::CommandManager::cmd(const std::string& name, std::istream& in, st
   }
   try
   {
-    cell->value(in, out);
+    cell->value(args, out);
   }
   catch (const std::exception&)
   {

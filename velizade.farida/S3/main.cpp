@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include <limits>
+#include <string>
 #include "commands.hpp"
 
 int main(int argc, char* argv[])
@@ -22,23 +22,28 @@ int main(int argc, char* argv[])
   }
 
   velizade::CommandManager cmdManager;
-
-  std::string command;
-  while (std::cin >> command)
+  std::string line;
+  while (std::getline(std::cin, line))
   {
-    if (!cmdManager.cmd(command, std::cin, std::cout))
+    if (line.empty())
+    {
+      continue;
+    }
+    velizade::Vector<std::string> tokens = velizade::splitLine(line);
+    if (tokens.isEmpty())
+    {
+      continue;
+    }
+    std::string cmdName = tokens[0];
+    velizade::Vector<std::string> args;
+    for (size_t i = 1; i < tokens.getSize(); ++i)
+    {
+      args.pushBack(tokens[i]);
+    }
+    if (!cmdManager.cmd(cmdName, args, std::cout))
     {
       std::cout << "<INVALID COMMAND>\n";
     }
-    std::cin.clear();
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
   }
-
-  if (!std::cin.eof())
-  {
-    std::cerr << "Bad input\n";
-    return 1;
-  }
-
   return 0;
 }

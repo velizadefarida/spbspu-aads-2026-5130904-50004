@@ -5,27 +5,29 @@
 #include <string>
 #include <iosfwd>
 #include "graph.hpp"
+#include "vector.hpp"
 
 namespace velizade
 {
-  using func_t = std::function<void(std::istream&, std::ostream&)>;
 
-  void cmdGraphs(std::istream& in, std::ostream& out);
-  void cmdVertexes(std::istream& in, std::ostream& out);
-  void cmdOutbound(std::istream& in, std::ostream& out);
-  void cmdInbound(std::istream& in, std::ostream& out);
-  void cmdBind(std::istream& in, std::ostream& out);
-  void cmdCut(std::istream& in, std::ostream& out);
-  void cmdCreate(std::istream& in, std::ostream& out);
-  void cmdMerge(std::istream& in, std::ostream& out);
-  void cmdExtract(std::istream& in, std::ostream& out);
+  using func_t = std::function<void(const Vector<std::string>&, std::ostream&)>;
+
+  void cmdGraphs(const Vector<std::string>& args, std::ostream& out);
+  void cmdVertexes(const Vector<std::string>& args, std::ostream& out);
+  void cmdOutbound(const Vector<std::string>& args, std::ostream& out);
+  void cmdInbound(const Vector<std::string>& args, std::ostream& out);
+  void cmdBind(const Vector<std::string>& args, std::ostream& out);
+  void cmdCut(const Vector<std::string>& args, std::ostream& out);
+  void cmdCreate(const Vector<std::string>& args, std::ostream& out);
+  void cmdMerge(const Vector<std::string>& args, std::ostream& out);
+  void cmdExtract(const Vector<std::string>& args, std::ostream& out);
 
   class CommandManager
   {
   public:
     CommandManager();
 
-    bool cmd(const std::string& name, std::istream& in, std::ostream& out) const;
+    bool cmd(const std::string& name, const Vector<std::string>& args, std::ostream& out) const;
 
     void addCommand(const std::string& name, func_t cmd);
 
@@ -33,6 +35,7 @@ namespace velizade
     using CommandTable = HashTable<std::string, func_t>;
     CommandTable cmds_;
   };
+
 }
 
 #endif
