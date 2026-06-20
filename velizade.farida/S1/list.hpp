@@ -185,6 +185,28 @@ namespace velizade
       --size_;
     }
 
+    void push_back(const T& value)
+    {
+      Node<T>* cur = head;
+      while (cur->next)
+      {
+        cur = cur->next;
+      }
+      cur->next = new Node<T>(value);
+      ++size_;
+    }
+
+    void push_back(T&& value)
+    {
+      Node<T>* cur = head;
+      while (cur->next)
+      {
+        cur = cur->next;
+      }
+      cur->next = new Node<T>(std::move(value));
+      ++size_;
+    }
+
     LIter< T > insert_after(LCIter< T > pos, const T& value)
     {
       if (pos == cend())
