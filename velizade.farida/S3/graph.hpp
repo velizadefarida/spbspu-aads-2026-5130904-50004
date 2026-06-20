@@ -10,11 +10,11 @@
 namespace velizade
 {
 
-using EdgeKey = std::pair<std::string, std::string>;
-using EdgeTable = HashTable<EdgeKey, Vector<int>>;
+  using EdgeKey = std::pair<std::string, std::string>;
+  using EdgeTable = HashTable<EdgeKey, Vector<int>>;
 
-struct Graph
-{
+  struct Graph
+  {
     std::string name;
     Vector<std::string> vertices;
     EdgeTable edges;
@@ -26,16 +26,16 @@ struct Graph
     void addEdge(const std::string& from, const std::string& to, int weight);
     bool removeEdge(const std::string& from, const std::string& to, int weight);
     bool hasVertex(const std::string& v) const;
-};
+  };
 
-using GraphTable = HashTable<std::string, Graph>;
-GraphTable& getGraphs();
+  using GraphTable = HashTable<std::string, Graph>;
+  GraphTable& getGraphs();
 
-void loadGraphsFromFile(const std::string& filename);
+  void loadGraphsFromFile(const std::string& filename);
 
-Vector<std::string> splitLine(const std::string& line);
-void sortStrings(Vector<std::string>& vec);
-void printLines(const Vector<std::string>& lines);
+  Vector<std::string> splitLine(const std::string& line);
+  void sortStrings(Vector<std::string>& vec);
+  void printLines(const Vector<std::string>& lines);
 
 }
 

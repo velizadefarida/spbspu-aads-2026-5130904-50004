@@ -13,21 +13,21 @@
 namespace velizade
 {
 
-struct SipHash
-{
+  struct SipHash
+  {
     template<class T>
     std::size_t operator()(const T& key) const noexcept
     {
-        boost::hash2::siphash_64 hasher;
-        boost::hash2::hash_append(hasher, {}, key);
-        return hasher.result();
+      boost::hash2::siphash_64 hasher;
+      boost::hash2::hash_append(hasher, {}, key);
+      return hasher.result();
     }
-};
+  };
 
-template<class Key, class Value, class Hash = SipHash, class Equal = std::equal_to<Key>>
-class HashTable
-{
-public:
+  template<class Key, class Value, class Hash = SipHash, class Equal = std::equal_to<Key>>
+  class HashTable
+  {
+  public:
     using key_type = Key;
     using value_type = Value;
     using hasher = Hash;
@@ -54,12 +54,12 @@ public:
     iterator begin();
     iterator end();
 
-private:
+  private:
     struct Cell
     {
-        Key key;
-        Value value;
-        bool occupied = false;
+      Key key;
+      Value value;
+      bool occupied = false;
     };
 
     size_t numBuckets_;
@@ -76,273 +76,273 @@ private:
     const Cell* findInOverflow(const Key& k) const;
     Cell* find(const Key& k);
     const Cell* find(const Key& k) const;
-};
+  };
 
 }
 
 template<class Key, class Value, class Hash, class Equal>
 velizade::HashTable<Key, Value, Hash, Equal>::HashTable(size_t numBuckets, size_t bucketSize) :
-    numBuckets_(numBuckets),
-    bucketSize_(bucketSize),
-    table_(new Cell[numBuckets * bucketSize]),
-    overflow_()
+  numBuckets_(numBuckets),
+  bucketSize_(bucketSize),
+  table_(new Cell[numBuckets * bucketSize]),
+  overflow_()
 {
-    for (size_t i = 0; i < numBuckets * bucketSize; ++i)
-    {
-        table_[i].occupied = false;
-    }
+  for (size_t i = 0; i < numBuckets * bucketSize; ++i)
+  {
+    table_[i].occupied = false;
+  }
 }
 
 template<class Key, class Value, class Hash, class Equal>
 velizade::HashTable<Key, Value, Hash, Equal>::HashTable(const HashTable& other) :
-    numBuckets_(other.numBuckets_),
-    bucketSize_(other.bucketSize_),
-    table_(new Cell[numBuckets_ * bucketSize_]),
-    overflow_(other.overflow_),
-    hash_(other.hash_),
-    equal_(other.equal_)
+  numBuckets_(other.numBuckets_),
+  bucketSize_(other.bucketSize_),
+  table_(new Cell[numBuckets_ * bucketSize_]),
+  overflow_(other.overflow_),
+  hash_(other.hash_),
+  equal_(other.equal_)
 {
-    for (size_t i = 0; i < numBuckets_ * bucketSize_; ++i)
-    {
-        table_[i] = other.table_[i];
-    }
+  for (size_t i = 0; i < numBuckets_ * bucketSize_; ++i)
+  {
+    table_[i] = other.table_[i];
+  }
 }
 
 template<class Key, class Value, class Hash, class Equal>
 velizade::HashTable<Key, Value, Hash, Equal>::HashTable(HashTable&& other) noexcept :
-    numBuckets_(0),
-    bucketSize_(0),
-    table_(nullptr)
+  numBuckets_(0),
+  bucketSize_(0),
+  table_(nullptr)
 {
-    swap(other);
+  swap(other);
 }
 
 template<class Key, class Value, class Hash, class Equal>
 velizade::HashTable<Key, Value, Hash, Equal>::~HashTable()
 {
-    delete[] table_;
+  delete[] table_;
 }
 
 template<class Key, class Value, class Hash, class Equal>
 velizade::HashTable<Key, Value, Hash, Equal>&
 velizade::HashTable<Key, Value, Hash, Equal>::operator=(const HashTable& other)
 {
-    if (this != &other)
-    {
-        HashTable tmp(other);
-        swap(tmp);
-    }
-    return *this;
+  if (this != &other)
+  {
+    HashTable tmp(other);
+    swap(tmp);
+  }
+  return *this;
 }
 
 template<class Key, class Value, class Hash, class Equal>
 velizade::HashTable<Key, Value, Hash, Equal>&
 velizade::HashTable<Key, Value, Hash, Equal>::operator=(HashTable&& other) noexcept
 {
-    swap(other);
-    return *this;
+  swap(other);
+  return *this;
 }
 
 template<class Key, class Value, class Hash, class Equal>
 void velizade::HashTable<Key, Value, Hash, Equal>::swap(HashTable& other) noexcept
 {
-    using std::swap;
-    swap(numBuckets_, other.numBuckets_);
-    swap(bucketSize_, other.bucketSize_);
-    swap(table_, other.table_);
-    swap(overflow_, other.overflow_);
-    swap(hash_, other.hash_);
-    swap(equal_, other.equal_);
+  using std::swap;
+  swap(numBuckets_, other.numBuckets_);
+  swap(bucketSize_, other.bucketSize_);
+  swap(table_, other.table_);
+  swap(overflow_, other.overflow_);
+  swap(hash_, other.hash_);
+  swap(equal_, other.equal_);
 }
 
 template<class Key, class Value, class Hash, class Equal>
 void velizade::HashTable<Key, Value, Hash, Equal>::add(const Key& k, const Value& v)
 {
-    if (find(k) != nullptr)
-    {
-        throw std::runtime_error("Key already exists");
-    }
+  if (find(k) != nullptr)
+  {
+    throw std::runtime_error("Key already exists");
+  }
 
-    size_t idx = getBucketIndex(k);
-    size_t start = idx * bucketSize_;
-    size_t end = start + bucketSize_;
-    for (size_t i = start; i < end; ++i)
+  size_t idx = getBucketIndex(k);
+  size_t start = idx * bucketSize_;
+  size_t end = start + bucketSize_;
+  for (size_t i = start; i < end; ++i)
+  {
+    if (!table_[i].occupied)
     {
-        if (!table_[i].occupied)
-        {
-            table_[i].key = k;
-            table_[i].value = v;
-            table_[i].occupied = true;
-            return;
-        }
+      table_[i].key = k;
+      table_[i].value = v;
+      table_[i].occupied = true;
+      return;
     }
-    Cell cell;
-    cell.key = k;
-    cell.value = v;
-    cell.occupied = true;
-    overflow_.pushBack(cell);
+  }
+  Cell cell;
+  cell.key = k;
+  cell.value = v;
+  cell.occupied = true;
+  overflow_.pushBack(cell);
 }
 
 template<class Key, class Value, class Hash, class Equal>
 Value velizade::HashTable<Key, Value, Hash, Equal>::drop(const Key& k)
 {
-    Cell* cell = find(k);
-    if (!cell)
-    {
-        throw std::out_of_range("Key not found");
-    }
+  Cell* cell = find(k);
+  if (!cell)
+  {
+    throw std::out_of_range("Key not found");
+  }
 
-    bool inHome = (cell >= table_ && cell < table_ + numBuckets_ * bucketSize_);
-    Value val = std::move(cell->value);
-    if (inHome)
+  bool inHome = (cell >= table_ && cell < table_ + numBuckets_ * bucketSize_);
+  Value val = std::move(cell->value);
+  if (inHome)
+  {
+    cell->occupied = false;
+  }
+  else
+  {
+    for (size_t i = 0; i < overflow_.getSize(); ++i)
     {
-        cell->occupied = false;
+      if (&overflow_[i] == cell)
+      {
+        overflow_.erase(i);
+        break;
+      }
     }
-    else
-    {
-        for (size_t i = 0; i < overflow_.getSize(); ++i)
-        {
-            if (&overflow_[i] == cell)
-            {
-                overflow_.erase(i);
-                break;
-            }
-        }
-    }
-    return val;
+  }
+  return val;
 }
 
 template<class Key, class Value, class Hash, class Equal>
 bool velizade::HashTable<Key, Value, Hash, Equal>::has(const Key& k) const
 {
-    return (find(k) != nullptr);
+  return (find(k) != nullptr);
 }
 
 template<class Key, class Value, class Hash, class Equal>
 void velizade::HashTable<Key, Value, Hash, Equal>::rehash(size_t newNumBuckets)
 {
-    HashTable newTable(newNumBuckets, bucketSize_);
-    for (size_t i = 0; i < numBuckets_ * bucketSize_; ++i)
+  HashTable newTable(newNumBuckets, bucketSize_);
+  for (size_t i = 0; i < numBuckets_ * bucketSize_; ++i)
+  {
+    if (table_[i].occupied)
     {
-        if (table_[i].occupied)
-        {
-            newTable.add(table_[i].key, table_[i].value);
-        }
+      newTable.add(table_[i].key, table_[i].value);
     }
-    for (size_t i = 0; i < overflow_.getSize(); ++i)
+  }
+  for (size_t i = 0; i < overflow_.getSize(); ++i)
+  {
+    if (overflow_[i].occupied)
     {
-        if (overflow_[i].occupied)
-        {
-            newTable.add(overflow_[i].key, overflow_[i].value);
-        }
+      newTable.add(overflow_[i].key, overflow_[i].value);
     }
-    swap(newTable);
+  }
+  swap(newTable);
 }
 
 template<class Key, class Value, class Hash, class Equal>
 typename velizade::HashTable<Key, Value, Hash, Equal>::iterator
 velizade::HashTable<Key, Value, Hash, Equal>::begin()
 {
-    return iterator(this);
+  return iterator(this);
 }
 
 template<class Key, class Value, class Hash, class Equal>
 typename velizade::HashTable<Key, Value, Hash, Equal>::iterator
 velizade::HashTable<Key, Value, Hash, Equal>::end()
 {
-    return iterator(this, true);
+  return iterator(this, true);
 }
 
 template<class Key, class Value, class Hash, class Equal>
 size_t velizade::HashTable<Key, Value, Hash, Equal>::getBucketIndex(const Key& k) const
 {
-    return hash_(k) % numBuckets_;
+  return hash_(k) % numBuckets_;
 }
 
 template<class Key, class Value, class Hash, class Equal>
 typename velizade::HashTable<Key, Value, Hash, Equal>::Cell*
 velizade::HashTable<Key, Value, Hash, Equal>::findInBucket(size_t idx, const Key& k)
 {
-    size_t start = idx * bucketSize_;
-    size_t end = start + bucketSize_;
-    for (size_t i = start; i < end; ++i)
+  size_t start = idx * bucketSize_;
+  size_t end = start + bucketSize_;
+  for (size_t i = start; i < end; ++i)
+  {
+    if (table_[i].occupied && equal_(table_[i].key, k))
     {
-        if (table_[i].occupied && equal_(table_[i].key, k))
-        {
-            return &table_[i];
-        }
+      return &table_[i];
     }
-    return nullptr;
+  }
+  return nullptr;
 }
 
 template<class Key, class Value, class Hash, class Equal>
 const typename velizade::HashTable<Key, Value, Hash, Equal>::Cell*
 velizade::HashTable<Key, Value, Hash, Equal>::findInBucket(size_t idx, const Key& k) const
 {
-    size_t start = idx * bucketSize_;
-    size_t end = start + bucketSize_;
-    for (size_t i = start; i < end; ++i)
+  size_t start = idx * bucketSize_;
+  size_t end = start + bucketSize_;
+  for (size_t i = start; i < end; ++i)
+  {
+    if (table_[i].occupied && equal_(table_[i].key, k))
     {
-        if (table_[i].occupied && equal_(table_[i].key, k))
-        {
-            return &table_[i];
-        }
+      return &table_[i];
     }
-    return nullptr;
+  }
+  return nullptr;
 }
 
 template<class Key, class Value, class Hash, class Equal>
 typename velizade::HashTable<Key, Value, Hash, Equal>::Cell*
 velizade::HashTable<Key, Value, Hash, Equal>::findInOverflow(const Key& k)
 {
-    for (size_t i = 0; i < overflow_.getSize(); ++i)
+  for (size_t i = 0; i < overflow_.getSize(); ++i)
+  {
+    if (overflow_[i].occupied && equal_(overflow_[i].key, k))
     {
-        if (overflow_[i].occupied && equal_(overflow_[i].key, k))
-        {
-            return &overflow_[i];
-        }
+      return &overflow_[i];
     }
-    return nullptr;
+  }
+  return nullptr;
 }
 
 template<class Key, class Value, class Hash, class Equal>
 const typename velizade::HashTable<Key, Value, Hash, Equal>::Cell*
 velizade::HashTable<Key, Value, Hash, Equal>::findInOverflow(const Key& k) const
 {
-    for (size_t i = 0; i < overflow_.getSize(); ++i)
+  for (size_t i = 0; i < overflow_.getSize(); ++i)
+  {
+    if (overflow_[i].occupied && equal_(overflow_[i].key, k))
     {
-        if (overflow_[i].occupied && equal_(overflow_[i].key, k))
-        {
-            return &overflow_[i];
-        }
+      return &overflow_[i];
     }
-    return nullptr;
+  }
+  return nullptr;
 }
 
 template<class Key, class Value, class Hash, class Equal>
 typename velizade::HashTable<Key, Value, Hash, Equal>::Cell*
 velizade::HashTable<Key, Value, Hash, Equal>::find(const Key& k)
 {
-    size_t idx = getBucketIndex(k);
-    Cell* found = findInBucket(idx, k);
-    if (found)
-    {
-        return found;
-    }
-    return findInOverflow(k);
+  size_t idx = getBucketIndex(k);
+  Cell* found = findInBucket(idx, k);
+  if (found)
+  {
+    return found;
+  }
+  return findInOverflow(k);
 }
 
 template<class Key, class Value, class Hash, class Equal>
 const typename velizade::HashTable<Key, Value, Hash, Equal>::Cell*
 velizade::HashTable<Key, Value, Hash, Equal>::find(const Key& k) const
 {
-    size_t idx = getBucketIndex(k);
-    const Cell* found = findInBucket(idx, k);
-    if (found)
-    {
-        return found;
-    }
-    return findInOverflow(k);
+  size_t idx = getBucketIndex(k);
+  const Cell* found = findInBucket(idx, k);
+  if (found)
+  {
+    return found;
+  }
+  return findInOverflow(k);
 }
 
 #endif
