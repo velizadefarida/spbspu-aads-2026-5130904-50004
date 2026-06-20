@@ -34,7 +34,7 @@ namespace velizade
     HashTable<std::string, Graph> graphs_;
   };
 
-  
+
   template<class T>
   void sortVector(Vector<T>& vec);
   Vector<std::string> splitString(const std::string& str);
