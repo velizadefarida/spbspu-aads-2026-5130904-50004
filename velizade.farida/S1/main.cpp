@@ -2,34 +2,26 @@
 #include <iostream>
 #include <string>
 #include <utility>
-#include <sstream>
 #include <limits>
-
-using namespace velizade;
 
 int main()
 {
   try
   {
-    List<std::pair<std::string, List<unsigned long long>>> sequences;
-    std::string line;
+    velizade::List< std::pair< std::string, velizade::List< unsigned long long > > > sequences;
+    std::string name;
 
-    while (std::getline(std::cin, line))
+    while (std::cin >> name)
     {
-      if (line.empty())
-      {
-        continue;
-      }
-      std::istringstream iss(line);
-      std::string name;
-      iss >> name;
-      List<unsigned long long> numbers;
+      velizade::List< unsigned long long > numbers;
       unsigned long long num;
-      while (iss >> num)
+      while (std::cin >> num)
       {
-        numbers.push_back(num);
+        numbers.push_front(num);
       }
-      sequences.push_back({name, std::move(numbers)});
+      numbers.reverse();
+      sequences.push_front({name, std::move(numbers)});
+      std::cin.clear();
     }
 
     if (sequences.empty())
@@ -38,72 +30,89 @@ int main()
       return 0;
     }
 
-    auto nameIt = sequences.cbegin();
+    sequences.reverse();
+
+    auto nameIt = ++sequences.cbegin();
     std::cout << nameIt->first;
     ++nameIt;
     for (; nameIt != sequences.cend(); ++nameIt)
     {
-      std::cout << ' ' << nameIt->first;
+      std::cout << " " << nameIt->first;
     }
-    std::cout << '\n';
+    std::cout << "\n";
 
     size_t maxLen = 0;
-    for (auto seq = sequences.cbegin(); seq != sequences.cend(); ++seq)
+    for (auto seq = ++sequences.cbegin(); seq != sequences.cend(); ++seq)
     {
       if (seq->second.size() > maxLen)
       {
         maxLen = seq->second.size();
       }
     }
+
     if (maxLen == 0)
     {
       std::cout << "0\n";
       return 0;
     }
 
-    List<List<unsigned long long>> columns;
+    velizade::List< velizade::List< unsigned long long > > columns;
     for (size_t i = 0; i < maxLen; ++i)
     {
-      List<unsigned long long> col;
-      for (auto seq = sequences.cbegin(); seq != sequences.cend(); ++seq)
+      velizade::List< unsigned long long > col;
+      for (auto seq = ++sequences.cbegin(); seq != sequences.cend(); ++seq)
       {
         if (i < seq->second.size())
         {
           auto elem = seq->second.cbegin();
-          for (size_t j = 0; j < i; ++j)
+          for (size_t j = 0; j <= i; ++j)
+          {
             ++elem;
-          col.push_back(*elem);
+          }
+          col.push_front(*elem);
         }
       }
-      columns.push_back(std::move(col));
+      col.reverse();
+      columns.push_front(std::move(col));
     }
+    columns.reverse();
 
-    List<unsigned long long> sums;
+    velizade::List< unsigned long long > sums;
     bool overflow = false;
-    for (auto col = columns.cbegin(); col != columns.cend(); ++col)
+
+    for (auto col = ++columns.cbegin(); col != columns.cend(); ++col)
     {
-      bool firstElem = true;
       unsigned long long colSum = 0;
-      for (auto val = col->cbegin(); val != col->cend(); ++val)
+      auto it = ++col->cbegin();
+      if (it != col->cend())
       {
-        if (!firstElem)
-        {
-          std::cout << ' ';
-        }
-        std::cout << *val;
-        firstElem = false;
-        if (colSum > std::numeric_limits<unsigned long long>::max() - *val)
+        std::cout << *it;
+        if (colSum > std::numeric_limits< unsigned long long >::max() - *it)
         {
           overflow = true;
         }
         else
         {
-          colSum += *val;
+          colSum += *it;
+        }
+        ++it;
+        for (; it != col->cend(); ++it)
+        {
+          std::cout << ' ' << *it;
+          if (colSum > std::numeric_limits< unsigned long long >::max() - *it)
+          {
+            overflow = true;
+          }
+          else
+          {
+            colSum += *it;
+          }
         }
       }
-      std::cout << '\n';
-      sums.push_back(colSum);
+      std::cout << "\n";
+      sums.push_front(colSum);
     }
+    sums.reverse();
 
     if (overflow)
     {
@@ -111,20 +120,26 @@ int main()
       return 1;
     }
 
-    auto sumIt = sums.cbegin();
-    std::cout << *sumIt;
-    ++sumIt;
-    for (; sumIt != sums.cend(); ++sumIt)
+    if (!sums.empty())
     {
-      std::cout << ' ' << *sumIt;
+      auto it = ++sums.cbegin();
+      if (it != sums.cend())
+      {
+        std::cout << *it;
+        ++it;
+        for (; it != sums.cend(); ++it)
+        {
+          std::cout << " " << *it;
+        }
+        std::cout << "\n";
+      }
     }
-    std::cout << '\n';
 
     return 0;
   }
   catch (const std::exception& e)
   {
-    std::cerr << "Error: " << e.what() << '\n';
+    std::cerr << "Error: " << e.what() << "\n";
     return 1;
   }
 }
