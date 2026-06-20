@@ -2,121 +2,14 @@
 #define LIST_HPP
 
 #include <cstddef>
-#include <iterator>
 #include <stdexcept>
 #include <utility>
+#include "node.hpp"
+#include "liter.hpp"
+#include "lciter.hpp"
 
 namespace velizade
 {
-  template< class T >
-  class List;
-
-  template< class T >
-  class LIter : public std::iterator<std::forward_iterator_tag, T>
-  {
-    friend class List< T >;
-
-  public:
-    LIter() noexcept : ptr(nullptr) {}
-
-    LIter(const LIter&) noexcept = default;
-    LIter(LIter&&) noexcept = default;
-    ~LIter() = default;
-
-    LIter& operator=(const LIter&) noexcept = default;
-    LIter& operator=(LIter&&) noexcept = default;
-
-    T& operator*() const noexcept
-    {
-      return ptr->data;
-    }
-
-    T* operator->() const noexcept
-    {
-      return &(ptr->data);
-    }
-
-    LIter& operator++() noexcept
-    {
-      ptr = ptr->next;
-      return *this;
-    }
-
-    LIter operator++(int) noexcept
-    {
-      LIter tmp = *this;
-      ++(*this);
-      return tmp;
-    }
-
-    bool operator==(const LIter& other) const noexcept
-    {
-      return ptr == other.ptr;
-    }
-
-    bool operator!=(const LIter& other) const noexcept
-    {
-      return ptr != other.ptr;
-    }
-
-  private:
-    typename List< T >::Node* ptr;
-    explicit LIter(typename List< T >::Node* p) noexcept : ptr(p) {}
-  };
-
-  template< class T >
-  class LCIter : public std::iterator<std::forward_iterator_tag, const T>
-  {
-    friend class List< T >;
-
-  public:
-    LCIter() noexcept : ptr(nullptr) {}
-
-    LCIter(const LCIter&) noexcept = default;
-    LCIter(LCIter&&) noexcept = default;
-    ~LCIter() = default;
-
-    LCIter& operator=(const LCIter&) noexcept = default;
-    LCIter& operator=(LCIter&&) noexcept = default;
-
-    const T& operator*() const noexcept
-    {
-      return ptr->data;
-    }
-
-    const T* operator->() const noexcept
-    {
-      return &(ptr->data);
-    }
-
-    LCIter& operator++() noexcept
-    {
-      ptr = ptr->next;
-      return *this;
-    }
-
-    LCIter operator++(int) noexcept
-    {
-      LCIter tmp = *this;
-      ++(*this);
-      return tmp;
-    }
-
-    bool operator==(const LCIter& other) const noexcept
-    {
-      return ptr == other.ptr;
-    }
-
-    bool operator!=(const LCIter& other) const noexcept
-    {
-      return ptr != other.ptr;
-    }
-
-  private:
-    const typename List< T >::Node* ptr;
-    explicit LCIter(const typename List< T >::Node* p) noexcept : ptr(p) {}
-  };
-
   template< class T >
   class List
   {
@@ -124,32 +17,12 @@ namespace velizade
     friend class LCIter< T >;
 
   private:
-    struct Node
-    {
-      T data;
-      Node* next;
-
-      explicit Node(const T& val, Node* n = nullptr) :
-          data(val),
-          next(n)
-      {}
-
-      explicit Node(T&& val, Node* n = nullptr) :
-          data(std::move(val)),
-          next(n)
-      {}
-
-      Node() noexcept :
-          next(nullptr)
-      {}
-    };
-
-    Node* head;
+    Node< T >* head;
     size_t size_;
 
   public:
     List() noexcept :
-        head(new Node()),
+        head(new Node< T >()),
         size_(0)
     {}
 
@@ -161,10 +34,10 @@ namespace velizade
 
     void clear()
     {
-      Node* cur = head->next;
+      Node< T >* cur = head->next;
       while (cur)
       {
-        Node* tmp = cur;
+        Node< T >* tmp = cur;
         cur = cur->next;
         delete tmp;
       }
@@ -173,15 +46,15 @@ namespace velizade
     }
 
     List(const List& other) :
-        head(new Node()),
+        head(new Node< T >()),
         size_(0)
     {
       try
       {
-        Node* cur = head;
-        for (Node* src = other.head->next; src; src = src->next)
+        Node< T >* cur = head;
+        for (Node< T >* src = other.head->next; src; src = src->next)
         {
-          cur->next = new Node(src->data);
+          cur->next = new Node< T >(src->data);
           cur = cur->next;
           ++size_;
         }
@@ -198,7 +71,7 @@ namespace velizade
         head(other.head),
         size_(other.size_)
     {
-      other.head = new Node();
+      other.head = new Node< T >();
       other.size_ = 0;
     }
 
@@ -220,7 +93,7 @@ namespace velizade
         delete head;
         head = other.head;
         size_ = other.size_;
-        other.head = new Node();
+        other.head = new Node< T >();
         other.size_ = 0;
       }
       return *this;
@@ -266,7 +139,7 @@ namespace velizade
       {
         throw std::runtime_error("List is empty");
       }
-      Node* cur = head;
+      Node< T >* cur = head;
       while (cur->next)
       {
         cur = cur->next;
@@ -280,7 +153,7 @@ namespace velizade
       {
         throw std::runtime_error("List is empty");
       }
-      Node* cur = head;
+      Node< T >* cur = head;
       while (cur->next)
       {
         cur = cur->next;
@@ -290,13 +163,13 @@ namespace velizade
 
     void push_front(const T& value)
     {
-      head->next = new Node(value, head->next);
+      head->next = new Node< T >(value, head->next);
       ++size_;
     }
 
     void push_front(T&& value)
     {
-      head->next = new Node(std::move(value), head->next);
+      head->next = new Node< T >(std::move(value), head->next);
       ++size_;
     }
 
@@ -306,7 +179,7 @@ namespace velizade
       {
         throw std::runtime_error("List is empty");
       }
-      Node* to_delete = head->next;
+      Node< T >* to_delete = head->next;
       head->next = to_delete->next;
       delete to_delete;
       --size_;
@@ -318,8 +191,8 @@ namespace velizade
       {
         throw std::runtime_error("Cannot insert after end");
       }
-      Node* node = const_cast<Node*>(pos.ptr);
-      node->next = new Node(value, node->next);
+      Node< T >* node = const_cast<Node< T >*>(pos.ptr);
+      node->next = new Node< T >(value, node->next);
       ++size_;
       return LIter< T >(node->next);
     }
@@ -330,8 +203,8 @@ namespace velizade
       {
         throw std::runtime_error("Cannot insert after end");
       }
-      Node* node = const_cast<Node*>(pos.ptr);
-      node->next = new Node(std::move(value), node->next);
+      Node< T >* node = const_cast<Node< T >*>(pos.ptr);
+      node->next = new Node< T >(std::move(value), node->next);
       ++size_;
       return LIter< T >(node->next);
     }
@@ -342,8 +215,8 @@ namespace velizade
       {
         return LIter< T >(nullptr);
       }
-      Node* node = const_cast<Node*>(pos.ptr);
-      Node* to_delete = node->next;
+      Node< T >* node = const_cast<Node< T >*>(pos.ptr);
+      Node< T >* to_delete = node->next;
       node->next = to_delete->next;
       delete to_delete;
       --size_;
@@ -356,9 +229,9 @@ namespace velizade
       {
         return;
       }
-      Node* prev = nullptr;
-      Node* cur = head->next;
-      Node* next = nullptr;
+      Node< T >* prev = nullptr;
+      Node< T >* cur = head->next;
+      Node< T >* next = nullptr;
       while (cur)
       {
         next = cur->next;
