@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include "commands.hpp"
+#include "graph.hpp"
 
 int main(int argc, char* argv[])
 {

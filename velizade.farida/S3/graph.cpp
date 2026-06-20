@@ -120,3 +120,41 @@ void velizade::loadGraphsFromFile(const std::string& filename)
     graphs.add(gname, std::move(g));
   }
 }
+
+velizade::Vector<std::string> velizade::splitLine(const std::string& line)
+{
+  Vector<std::string> tokens;
+  size_t start = 0;
+  while (start < line.size())
+  {
+    while (start < line.size() && (line[start] == ' ' || line[start] == '\t'))
+    {
+      ++start;
+    }
+    if (start >= line.size())
+    {
+      break;
+    }
+    size_t end = start;
+    while (end < line.size() && line[end] != ' ' && line[end] != '\t')
+    {
+      ++end;
+    }
+    tokens.pushBack(line.substr(start, end - start));
+    start = end;
+  }
+  return tokens;
+}
+
+void velizade::sortStrings(Vector<std::string>& vec)
+{
+  std::sort(vec.begin(), vec.end());
+}
+
+void velizade::printLines(const Vector<std::string>& lines)
+{
+  for (size_t i = 0; i < lines.getSize(); ++i)
+  {
+    std::cout << lines[i] << "\n";
+  }
+}

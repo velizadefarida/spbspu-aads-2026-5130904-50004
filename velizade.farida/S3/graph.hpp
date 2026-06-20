@@ -9,6 +9,7 @@
 
 namespace velizade
 {
+
   using EdgeKey = std::pair<std::string, std::string>;
   using EdgeTable = HashTable<EdgeKey, Vector<unsigned long long>>;
 
@@ -31,6 +32,11 @@ namespace velizade
   GraphTable& getGraphs();
 
   void loadGraphsFromFile(const std::string& filename);
+
+  Vector<std::string> splitLine(const std::string& line);
+  void sortStrings(Vector<std::string>& vec);
+  void printLines(const Vector<std::string>& lines);
+
 }
 
 #endif
