@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
   }
   catch (const std::exception& e)
   {
-    std::cerr << e.what() << "\n";
+    std::cerr << e.what() << '\n';
     return 1;
   }
 
@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
       std::cout << "<INVALID COMMAND>\n";
     }
     std::cin.clear();
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), "\n");
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
   }
 
   if (!std::cin.eof())
