@@ -80,6 +80,7 @@ namespace velizade
     Cell* findInOverflow(const Key& k);
     const Cell* findInOverflow(const Key& k) const;
   };
+
 }
 
 template<class Key, class Value, class Hash, class Equal>

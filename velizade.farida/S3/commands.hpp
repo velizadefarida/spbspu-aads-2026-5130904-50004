@@ -33,7 +33,6 @@ namespace velizade
     using CommandTable = HashTable<std::string, func_t>;
     CommandTable cmds_;
   };
-
 }
 
 #endif

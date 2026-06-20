@@ -7,6 +7,7 @@
 
 namespace velizade
 {
+
   template<class Key, class Value, class Hash, class Equal>
   class HashTable;
 

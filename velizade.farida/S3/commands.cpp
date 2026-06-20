@@ -28,7 +28,7 @@ static const velizade::Graph& getGraphCheckedConst(const std::string& name)
 struct OutEntry
 {
   std::string vertex;
-  velizade::Vector<int> weights;
+  velizade::Vector<unsigned long long> weights;
 };
 
 static bool cmpOutEntry(const OutEntry& a, const OutEntry& b)
@@ -52,9 +52,16 @@ void velizade::cmdGraphs(std::istream& in, std::ostream& out)
     names.pushBack(kv.first);
   }
   std::sort(names.begin(), names.end());
-  for (size_t i = 0; i < names.getSize(); ++i)
+  if (names.getSize() == 0)
   {
-    out << names[i] << '\n';
+    out << '\n';
+  }
+  else
+  {
+    for (size_t i = 0; i < names.getSize(); ++i)
+    {
+      out << names[i] << '\n';
+    }
   }
 }
 
@@ -74,9 +81,16 @@ void velizade::cmdVertexes(std::istream& in, std::ostream& out)
   const auto& g = getGraphCheckedConst(graphName);
   Vector<std::string> vlist = g.vertices;
   std::sort(vlist.begin(), vlist.end());
-  for (size_t i = 0; i < vlist.getSize(); ++i)
+  if (vlist.getSize() == 0)
   {
-    out << vlist[i] << '\n';
+    out << '\n';
+  }
+  else
+  {
+    for (size_t i = 0; i < vlist.getSize(); ++i)
+    {
+      out << vlist[i] << '\n';
+    }
   }
 }
 
@@ -113,14 +127,21 @@ void velizade::cmdOutbound(std::istream& in, std::ostream& out)
     }
   }
   std::sort(entries.begin(), entries.end(), cmpOutEntry);
-  for (size_t i = 0; i < entries.getSize(); ++i)
+  if (entries.getSize() == 0)
   {
-    out << entries[i].vertex;
-    for (size_t j = 0; j < entries[i].weights.getSize(); ++j)
-    {
-      out << ' ' << entries[i].weights[j];
-    }
     out << '\n';
+  }
+  else
+  {
+    for (size_t i = 0; i < entries.getSize(); ++i)
+    {
+      out << entries[i].vertex;
+      for (size_t j = 0; j < entries[i].weights.getSize(); ++j)
+      {
+        out << ' ' << entries[i].weights[j];
+      }
+      out << '\n';
+    }
   }
 }
 
@@ -157,14 +178,21 @@ void velizade::cmdInbound(std::istream& in, std::ostream& out)
     }
   }
   std::sort(entries.begin(), entries.end(), cmpOutEntry);
-  for (size_t i = 0; i < entries.getSize(); ++i)
+  if (entries.getSize() == 0)
   {
-    out << entries[i].vertex;
-    for (size_t j = 0; j < entries[i].weights.getSize(); ++j)
-    {
-      out << ' ' << entries[i].weights[j];
-    }
     out << '\n';
+  }
+  else
+  {
+    for (size_t i = 0; i < entries.getSize(); ++i)
+    {
+      out << entries[i].vertex;
+      for (size_t j = 0; j < entries[i].weights.getSize(); ++j)
+      {
+        out << ' ' << entries[i].weights[j];
+      }
+      out << '\n';
+    }
   }
 }
 
@@ -172,7 +200,7 @@ void velizade::cmdBind(std::istream& in, std::ostream& out)
 {
   (void)out;
   std::string graphName, from, to;
-  int weight;
+  unsigned long long weight;
   if (!(in >> graphName >> from >> to >> weight))
   {
     throw std::runtime_error("Invalid arguments");
@@ -193,7 +221,7 @@ void velizade::cmdCut(std::istream& in, std::ostream& out)
 {
   (void)out;
   std::string graphName, from, to;
-  int weight;
+  unsigned long long weight;
   if (!(in >> graphName >> from >> to >> weight))
   {
     throw std::runtime_error("Invalid arguments");

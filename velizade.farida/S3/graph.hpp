@@ -9,9 +9,8 @@
 
 namespace velizade
 {
-
   using EdgeKey = std::pair<std::string, std::string>;
-  using EdgeTable = HashTable<EdgeKey, Vector<int>>;
+  using EdgeTable = HashTable<EdgeKey, Vector<unsigned long long>>;
 
   struct Graph
   {
@@ -23,8 +22,8 @@ namespace velizade
     explicit Graph(const std::string& n);
 
     void addVertex(const std::string& v);
-    void addEdge(const std::string& from, const std::string& to, int weight);
-    bool removeEdge(const std::string& from, const std::string& to, int weight);
+    void addEdge(const std::string& from, const std::string& to, unsigned long long weight);
+    bool removeEdge(const std::string& from, const std::string& to, unsigned long long weight);
     bool hasVertex(const std::string& v) const;
   };
 

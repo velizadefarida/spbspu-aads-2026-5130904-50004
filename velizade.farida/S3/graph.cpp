@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <stdexcept>
 #include <iostream>
-#include <cctype>
 
 velizade::Graph::Graph() :
   edges(16, 4)
@@ -26,7 +25,7 @@ void velizade::Graph::addVertex(const std::string& v)
   vertices.pushBack(v);
 }
 
-void velizade::Graph::addEdge(const std::string& from, const std::string& to, int weight)
+void velizade::Graph::addEdge(const std::string& from, const std::string& to, unsigned long long weight)
 {
   EdgeKey key = {from, to};
   if (edges.has(key))
@@ -43,13 +42,13 @@ void velizade::Graph::addEdge(const std::string& from, const std::string& to, in
   }
   else
   {
-    Vector<int> weights;
+    Vector<unsigned long long> weights;
     weights.pushBack(weight);
     edges.add(key, weights);
   }
 }
 
-bool velizade::Graph::removeEdge(const std::string& from, const std::string& to, int weight)
+bool velizade::Graph::removeEdge(const std::string& from, const std::string& to, unsigned long long weight)
 {
   EdgeKey key = {from, to};
   auto* cell = edges.find(key);
@@ -100,56 +99,16 @@ void velizade::loadGraphsFromFile(const std::string& filename)
   }
 
   auto& graphs = getGraphs();
-  std::string line;
-  while (std::getline(file, line))
+  std::string gname;
+  size_t edgesCount;
+  while (file >> gname >> edgesCount)
   {
-    if (line.empty())
-    {
-      continue;
-    }
-    size_t first = line.find_first_not_of(" \t");
-    if (first == std::string::npos)
-    {
-      continue;
-    }
-    if (first > 0)
-    {
-      line.erase(0, first);
-    }
-
-    size_t pos = line.find_first_of(" \t");
-    if (pos == std::string::npos)
-    {
-      throw std::runtime_error("Invalid file format");
-    }
-    std::string gname = line.substr(0, pos);
-    std::string rest = line.substr(pos + 1);
-    while (!rest.empty() && (rest[0] == ' ' || rest[0] == '\t'))
-    {
-      rest.erase(0, 1);
-    }
-    size_t edgesCount = std::stoul(rest);
-
     Graph g(gname);
-    for (size_t e = 0; e < edgesCount; ++e)
+    for (size_t i = 0; i < edgesCount; ++i)
     {
-      if (!std::getline(file, line))
-      {
-        throw std::runtime_error("Unexpected EOF");
-      }
-      if (line.empty())
-      {
-        --e;
-        continue;
-      }
-      Vector<std::string> tokens = splitLine(line);
-      if (tokens.getSize() != 3)
-      {
-        throw std::runtime_error("Invalid edge line");
-      }
-      std::string from = tokens[0];
-      std::string to = tokens[1];
-      int weight = std::stoi(tokens[2]);
+      std::string from, to;
+      unsigned long long weight;
+      file >> from >> to >> weight;
       g.addVertex(from);
       g.addVertex(to);
       g.addEdge(from, to, weight);
@@ -162,7 +121,7 @@ void velizade::loadGraphsFromFile(const std::string& filename)
   }
 }
 
-velizade::Vector<std::string> velizade::splitLine(const std::string& line)
+Vector<std::string> splitLine(const std::string& line)
 {
   Vector<std::string> tokens;
   size_t start = 0;
@@ -187,12 +146,12 @@ velizade::Vector<std::string> velizade::splitLine(const std::string& line)
   return tokens;
 }
 
-void velizade::sortStrings(Vector<std::string>& vec)
+void sortStrings(Vector<std::string>& vec)
 {
   std::sort(vec.begin(), vec.end());
 }
 
-void velizade::printLines(const Vector<std::string>& lines)
+void printLines(const Vector<std::string>& lines)
 {
   for (size_t i = 0; i < lines.getSize(); ++i)
   {
