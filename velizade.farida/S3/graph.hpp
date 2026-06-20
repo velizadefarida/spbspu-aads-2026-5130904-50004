@@ -8,7 +8,6 @@
 
 namespace velizade
 {
-
   using EdgeKey = std::pair<std::string, std::string>;
   using EdgeTable = HashTable<EdgeKey, Vector<unsigned long long>>;
 
