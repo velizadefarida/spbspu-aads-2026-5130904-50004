@@ -9,7 +9,6 @@
 
 namespace velizade
 {
-
   using func_t = std::function<void(const Vector<std::string>&, std::ostream&)>;
 
   void cmdGraphs(const Vector<std::string>& args, std::ostream& out);
