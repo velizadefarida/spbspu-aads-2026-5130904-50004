@@ -142,7 +142,7 @@ namespace velizade
 
     BSTree()
     {
-      fake = new Node();
+      fake = new Node<Key, Value>();
       root = fake;
     }
 
@@ -156,7 +156,7 @@ namespace velizade
     {
       if (root == fake)
       {
-        NodePtr newNode = new Node(k, v);
+        NodePtr newNode = new Node<Key, Value>(k, v);
         newNode->left = fake;
         newNode->right = fake;
         root = newNode;
@@ -183,7 +183,7 @@ namespace velizade
         }
       }
 
-      NodePtr newNode = new Node(k, v);
+      NodePtr newNode = new Node<Key, Value>(k, v);
       newNode->left = fake;
       newNode->right = fake;
       newNode->parent = parent;
