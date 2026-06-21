@@ -412,24 +412,20 @@ namespace velizade
 
     const_iterator rotateLargeLeft(const_iterator it)
     {
-      NodePtr x = it.getNode();
-      if (x == nullptr || x->isFake() || x->parent_ == nullptr)
+      NodePtr g = it.getNode();
+      if (g == nullptr || g->isFake())
       {
         return it;
       }
 
-      NodePtr p = x->parent_;
-      if (p == nullptr)
-      {
-        return it;
-      }
-      NodePtr g = p->parent_;
-      if (g == nullptr)
+      NodePtr p = g->left_;
+      if (p == nullptr || p->isFake())
       {
         return it;
       }
 
-      if (p->right_ != x || g->left_ != p)
+      NodePtr x = p->right_;
+      if (x == nullptr || x->isFake())
       {
         return it;
       }
@@ -474,24 +470,20 @@ namespace velizade
 
     const_iterator rotateLargeRight(const_iterator it)
     {
-      NodePtr x = it.getNode();
-      if (x == nullptr || x->isFake() || x->parent_ == nullptr)
+      NodePtr p = it.getNode();
+      if (p == nullptr || p->isFake() || p->parent_ == nullptr)
       {
         return it;
       }
 
-      NodePtr p = x->parent_;
-      if (p == nullptr)
-      {
-        return it;
-      }
       NodePtr g = p->parent_;
-      if (g == nullptr)
+      if (g == nullptr || g->isFake())
       {
         return it;
       }
 
-      if (p->left_ != x || g->right_ != p)
+      NodePtr x = p->left_;
+      if (x == nullptr || x->isFake())
       {
         return it;
       }
