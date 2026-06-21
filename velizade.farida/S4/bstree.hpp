@@ -432,8 +432,8 @@ namespace velizade
         return it;
       }
 
-      rotateRightImpl(p);
-      rotateLeftImpl(g);
+      rotateLeftImpl(p);
+      rotateRightImpl(g);
 
       return const_iterator(x);
     }
@@ -462,8 +462,8 @@ namespace velizade
         return it;
       }
 
-      rotateLeftImpl(p);
-      rotateRightImpl(g);
+      rotateRightImpl(p);
+      rotateLeftImpl(g);
 
       return const_iterator(x);
     }
