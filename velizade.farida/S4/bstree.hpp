@@ -329,10 +329,6 @@ namespace velizade
 
     size_t height() const
     {
-      if (root_->isFake())
-      {
-        return 0;
-      }
       return heightRec(root_);
     }
 
@@ -450,10 +446,11 @@ namespace velizade
       p->parent_ = x;
       g->left_ = x;
 
-      g->left_ = x->right_;
-      if (x->right_ != nullptr && !x->right_->isFake())
+      NodePtr xRight = x->right_;
+      g->left_ = xRight;
+      if (xRight != nullptr && !xRight->isFake())
       {
-        x->right_->parent_ = g;
+        xRight->parent_ = g;
       }
 
       x->right_ = g;
@@ -510,10 +507,11 @@ namespace velizade
       p->parent_ = x;
       g->right_ = x;
 
-      g->right_ = x->left_;
-      if (x->left_ != nullptr && !x->left_->isFake())
+      NodePtr xLeft = x->left_;
+      g->right_ = xLeft;
+      if (xLeft != nullptr && !xLeft->isFake())
       {
-        x->left_->parent_ = g;
+        xLeft->parent_ = g;
       }
 
       x->left_ = g;
