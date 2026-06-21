@@ -77,84 +77,74 @@ namespace velizade
 
     NodePtr rotateLeftImpl(NodePtr x)
     {
-      if (x == nullptr || x->isFake() || x->parent_ == nullptr)
-      {
-        return x;
-      }
-      NodePtr p = x->parent_;
-      if (p->right_ != x)
+      if (x == nullptr || x->isFake() || x->right_->isFake())
       {
         return x;
       }
 
-      NodePtr xLeft = x->left_;
+      NodePtr y = x->right_;
+      NodePtr yLeft = y->left_;
 
-      p->right_ = xLeft;
-      if (xLeft != nullptr && !xLeft->isFake())
+      y->left_ = x;
+      x->right_ = yLeft;
+
+      y->parent_ = x->parent_;
+      x->parent_ = y;
+      if (!yLeft->isFake())
       {
-        xLeft->parent_ = p;
+        yLeft->parent_ = x;
       }
 
-      x->left_ = p;
-      x->parent_ = p->parent_;
-
-      if (p->parent_ == nullptr)
+      if (y->parent_ == nullptr)
       {
-        root_ = x;
+        root_ = y;
       }
-      else if (p->parent_->left_ == p)
+      else if (y->parent_->left_ == x)
       {
-        p->parent_->left_ = x;
+        y->parent_->left_ = y;
       }
       else
       {
-        p->parent_->right_ = x;
+        y->parent_->right_ = y;
       }
 
-      p->parent_ = x;
-
-      return x;
+      return y;
     }
 
     NodePtr rotateRightImpl(NodePtr x)
     {
-      if (x == nullptr || x->isFake() || x->parent_ == nullptr)
-      {
-        return x;
-      }
-      NodePtr p = x->parent_;
-      if (p->left_ != x)
+      if (x == nullptr || x->isFake() || x->left_->isFake())
       {
         return x;
       }
 
-      NodePtr xRight = x->right_;
+      NodePtr y = x->left_;
+      NodePtr yRight = y->right_;
 
-      p->left_ = xRight;
-      if (xRight != nullptr && !xRight->isFake())
+      y->right_ = x;
+      x->left_ = yRight;
+
+      y->parent_ = x->parent_;
+      x->parent_ = y;
+      if (!yRight->isFake())
       {
-        xRight->parent_ = p;
+        yRight->parent_ = x;
       }
 
-      x->right_ = p;
-      x->parent_ = p->parent_;
-
-      if (p->parent_ == nullptr)
+      if (y->parent_ == nullptr)
       {
-        root_ = x;
+        root_ = y;
       }
-      else if (p->parent_->left_ == p)
+      else if (y->parent_->left_ == x)
       {
-        p->parent_->left_ = x;
+        y->parent_->left_ = y;
       }
       else
       {
-        p->parent_->right_ = x;
+        y->parent_->right_ = y;
       }
 
-      p->parent_ = x;
-
-      return x;
+      return y;
     }
 
   public:
@@ -401,7 +391,7 @@ namespace velizade
     const_iterator rotateLeft(const_iterator it)
     {
       NodePtr x = it.getNode();
-      if (x == nullptr || x->isFake() || x->parent_ == nullptr)
+      if (x == nullptr || x->isFake())
       {
         return it;
       }
@@ -412,7 +402,7 @@ namespace velizade
     const_iterator rotateRight(const_iterator it)
     {
       NodePtr x = it.getNode();
-      if (x == nullptr || x->isFake() || x->parent_ == nullptr)
+      if (x == nullptr || x->isFake())
       {
         return it;
       }
