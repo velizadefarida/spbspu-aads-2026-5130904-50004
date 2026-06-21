@@ -3,9 +3,13 @@
 
 #include "node.hpp"
 #include <utility>
+#include <functional>
 
 namespace velizade
 {
+  template <typename Key, typename Value, typename Compare>
+  class BSTree;
+
   template<typename Key, typename Value>
   class BSTIterator
   {
@@ -66,11 +70,13 @@ namespace velizade
   };
 
   template<typename Key, typename Value>
-  BSTIterator<Key, Value>::BSTIterator(): current(nullptr), fake(nullptr)
+  BSTIterator<Key, Value>::BSTIterator()
+    : current(nullptr), fake(nullptr)
   {}
 
   template<typename Key, typename Value>
-  BSTIterator<Key, Value>::BSTIterator(NodePtr ptr, NodePtr fk): current(ptr), fake(fk)
+  BSTIterator<Key, Value>::BSTIterator(NodePtr ptr, NodePtr fk)
+    : current(ptr), fake(fk)
   {}
 
   template<typename Key, typename Value>
@@ -190,7 +196,8 @@ namespace velizade
   {}
 
   template<typename Key, typename Value>
-  BSTConstIterator<Key, Value>::BSTConstIterator(const BSTIterator<Key, Value>& it): current(it.getNode()), fake(it.fake)
+  BSTConstIterator<Key, Value>::BSTConstIterator(const BSTIterator<Key, Value>& it)
+    : current(it.getNode()), fake(it.fake)
   {}
 
   template<typename Key, typename Value>
