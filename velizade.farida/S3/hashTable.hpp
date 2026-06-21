@@ -103,6 +103,9 @@ namespace velizade
     Slot* findSlot(const Key& k, size_t& outBucketIdx, size_t& outSlotIdx) const;
     Slot* findFreeInBucket(size_t bucketIdx) const;
     Slot* findFreeInOverflow() const;
+
+    friend class HTIter<Key, Value, Hash, Equal>;
+    friend class HTCiter<Key, Value, Hash, Equal>;
   };
 
   template <class Key, class Value, class Hash, class Equal>
@@ -336,7 +339,6 @@ namespace velizade
       throw std::invalid_argument("HashTable::rehash: newBuckets must be > 0");
     }
 
-    size_t oldBuckets = buckets_;
     size_t oldBucketCap = bucketCapacity_;
     size_t oldOverflowCap = overflowCapacity_;
     Vector<Slot> oldSlots = std::move(slots_);

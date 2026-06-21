@@ -64,8 +64,10 @@ namespace velizade
   private:
     friend class HashTable<Key, Value, Hash, Equal>;
 
-    HTIter(const HashTable<Key, Value, Hash, Equal>* table, size_t idx)
-      : table_(table), slotIdx_(idx), totalSlots_(table ? table->slots_.getSize() : 0)
+    HTIter(HashTable<Key, Value, Hash, Equal>* table, size_t idx):
+        table_(table),
+        slotIdx_(idx),
+        totalSlots_(table ? table->slots_.getSize() : 0)
     {
       if (table_ && slotIdx_ < totalSlots_ && !table_->slots_[slotIdx_].used)
       {
@@ -73,7 +75,7 @@ namespace velizade
       }
     }
 
-    const HashTable<Key, Value, Hash, Equal>* table_;
+    HashTable<Key, Value, Hash, Equal>* table_;
     size_t slotIdx_;
     size_t totalSlots_;
   };
@@ -86,8 +88,9 @@ namespace velizade
 
     HTCiter() : table_(nullptr), slotIdx_(0), totalSlots_(0) {}
 
-    HTCiter(const HTIter<Key, Value, Hash, Equal>& other)
-      : table_(other.table_), slotIdx_(other.slotIdx_), totalSlots_(other.totalSlots_) {}
+    HTCiter(const HTIter<Key, Value, Hash, Equal>& other):
+        table_(other.table_), slotIdx_(other.slotIdx_), totalSlots_(other.totalSlots_)
+    {}
 
     const pair_t& operator*() const
     {
@@ -136,8 +139,10 @@ namespace velizade
   private:
     friend class HashTable<Key, Value, Hash, Equal>;
 
-    HTCiter(const HashTable<Key, Value, Hash, Equal>* table, size_t idx)
-      : table_(table), slotIdx_(idx), totalSlots_(table ? table->slots_.getSize() : 0)
+    HTCiter(const HashTable<Key, Value, Hash, Equal>* table, size_t idx):
+        table_(table),
+        slotIdx_(idx),
+        totalSlots_(table ? table->slots_.getSize() : 0)
     {
       if (table_ && slotIdx_ < totalSlots_ && !table_->slots_[slotIdx_].used)
       {
