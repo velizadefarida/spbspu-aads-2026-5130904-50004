@@ -80,6 +80,8 @@ void velizade::Cmd::processCommands(std::istream& in, std::ostream& out)
     }
     else
     {
+      std::string rest;
+      std::getline(in, rest);
       out << "<INVALID COMMAND>\n";
     }
   }
