@@ -2,8 +2,8 @@
 #define ITERATORS_HPP
 
 #include "node.hpp"
+#include <iterator>
 #include <utility>
-#include <functional>
 
 namespace velizade
 {
@@ -17,116 +17,102 @@ namespace velizade
 
   private:
     using NodePtr = Node<Key, Value>*;
-    NodePtr current;
-    NodePtr fake;
+    NodePtr node_;
+
+    BSTIterator(NodePtr node) noexcept;
 
   public:
     using value_type = std::pair<const Key, Value>;
     using reference = value_type&;
 
-    BSTIterator();
-    explicit BSTIterator(NodePtr ptr, NodePtr fk = nullptr);
+    BSTIterator() = default;
 
-    std::pair<const Key&, Value&> operator*() const;
-    const Key& key() const;
-    Value& value() const;
+    reference operator*() const noexcept;
+    value_type* operator->() const noexcept;
 
-    BSTIterator& operator++();
-    BSTIterator operator++(int);
-    BSTIterator& operator--();
-    BSTIterator operator--(int);
+    BSTIterator& operator++() noexcept;
+    BSTIterator operator++(int) noexcept;
+    BSTIterator& operator--() noexcept;
+    BSTIterator operator--(int) noexcept;
 
-    bool operator==(const BSTIterator& other) const;
-    bool operator!=(const BSTIterator& other) const;
+    bool operator==(const BSTIterator& other) const noexcept;
+    bool operator!=(const BSTIterator& other) const noexcept;
 
-    NodePtr getNode() const;
+    NodePtr getNode() const noexcept;
   };
 
   template<typename Key, typename Value>
   class BSTConstIterator
   {
     using NodePtr = Node<Key, Value>*;
-    NodePtr current;
-    NodePtr fake;
+    NodePtr node_;
+
+    BSTConstIterator(NodePtr node) noexcept;
 
   public:
-    using value_type = std::pair<const Key, const Value>;
+    using value_type = const std::pair<const Key, Value>;
+    using reference = value_type&;
 
-    BSTConstIterator();
-    explicit BSTConstIterator(NodePtr ptr, NodePtr fk = nullptr);
-    BSTConstIterator(const BSTIterator<Key, Value>& it);
+    BSTConstIterator() = default;
+    BSTConstIterator(const BSTIterator<Key, Value>& it) noexcept;
 
-    std::pair<const Key&, const Value&> operator*() const;
-    const Key& key() const;
-    const Value& value() const;
+    reference operator*() const noexcept;
+    value_type* operator->() const noexcept;
 
-    BSTConstIterator& operator++();
-    BSTConstIterator operator++(int);
+    BSTConstIterator& operator++() noexcept;
+    BSTConstIterator operator++(int) noexcept;
+    BSTConstIterator& operator--() noexcept;
+    BSTConstIterator operator--(int) noexcept;
 
-    bool operator==(const BSTConstIterator& other) const;
-    bool operator!=(const BSTConstIterator& other) const;
+    bool operator==(const BSTConstIterator& other) const noexcept;
+    bool operator!=(const BSTConstIterator& other) const noexcept;
 
-    NodePtr getNode() const;
+    NodePtr getNode() const noexcept;
   };
 
   template<typename Key, typename Value>
-  BSTIterator<Key, Value>::BSTIterator()
-    : current(nullptr), fake(nullptr)
+  BSTIterator<Key, Value>::BSTIterator(NodePtr node) noexcept:
+      node_(node ? node : std::addressof(Node<Key, Value>::fakeLeaf_))
   {}
 
   template<typename Key, typename Value>
-  BSTIterator<Key, Value>::BSTIterator(NodePtr ptr, NodePtr fk)
-    : current(ptr), fake(fk)
-  {}
-
-  template<typename Key, typename Value>
-  std::pair<const Key&, Value&> BSTIterator<Key, Value>::operator*() const
+  typename BSTIterator<Key, Value>::reference BSTIterator<Key, Value>::operator*() const noexcept
   {
-    return {current->key, current->value};
+    return node_->data_;
   }
 
   template<typename Key, typename Value>
-  const Key& BSTIterator<Key, Value>::key() const
+  typename BSTIterator<Key, Value>::value_type* BSTIterator<Key, Value>::operator->() const noexcept
   {
-    return current->key;
+    return std::addressof(node_->data_);
   }
 
   template<typename Key, typename Value>
-  Value& BSTIterator<Key, Value>::value() const
+  BSTIterator<Key, Value>& BSTIterator<Key, Value>::operator++() noexcept
   {
-    return current->value;
-  }
-
-  template<typename Key, typename Value>
-  BSTIterator<Key, Value>& BSTIterator<Key, Value>::operator++()
-  {
-    if (current == fake)
+    if (node_->right_ != std::addressof(Node<Key, Value>::fakeLeaf_))
     {
-      return *this;
-    }
-    if (current->right != fake)
-    {
-      current = current->right;
-      while (current->left != fake)
+      node_ = node_->right_;
+      while (node_->left_ != std::addressof(Node<Key, Value>::fakeLeaf_))
       {
-        current = current->left;
+        node_ = node_->left_;
       }
     }
     else
     {
-      NodePtr p = current->parent;
-      while (p != nullptr && current == p->right)
+      NodePtr p = node_->parent_;
+      while (p != nullptr && node_ == p->right_)
       {
-        current = p;
-        p = p->parent;
+        node_ = p;
+        p = p->parent_;
       }
-      current = (p == nullptr ? fake : p);
+      node_ = (p == nullptr ? std::addressof(Node<Key, Value>::fakeLeaf_) : p);
     }
     return *this;
   }
 
   template<typename Key, typename Value>
-  BSTIterator<Key, Value> BSTIterator<Key, Value>::operator++(int)
+  BSTIterator<Key, Value> BSTIterator<Key, Value>::operator++(int) noexcept
   {
     BSTIterator tmp = *this;
     ++(*this);
@@ -134,35 +120,35 @@ namespace velizade
   }
 
   template<typename Key, typename Value>
-  BSTIterator<Key, Value>& BSTIterator<Key, Value>::operator--()
+  BSTIterator<Key, Value>& BSTIterator<Key, Value>::operator--() noexcept
   {
-    if (current == fake)
+    if (node_->isFake())
     {
       return *this;
     }
-    if (current->left != fake)
+    if (node_->left_ != std::addressof(Node<Key, Value>::fakeLeaf_))
     {
-      current = current->left;
-      while (current->right != fake)
+      node_ = node_->left_;
+      while (node_->right_ != std::addressof(Node<Key, Value>::fakeLeaf_))
       {
-        current = current->right;
+        node_ = node_->right_;
       }
     }
     else
     {
-      NodePtr p = current->parent;
-      while (p != nullptr && current == p->left)
+      NodePtr p = node_->parent_;
+      while (p != nullptr && node_ == p->left_)
       {
-        current = p;
-        p = p->parent;
+        node_ = p;
+        p = p->parent_;
       }
-      current = (p == nullptr ? fake : p);
+      node_ = (p == nullptr ? std::addressof(Node<Key, Value>::fakeLeaf_) : p);
     }
     return *this;
   }
 
   template<typename Key, typename Value>
-  BSTIterator<Key, Value> BSTIterator<Key, Value>::operator--(int)
+  BSTIterator<Key, Value> BSTIterator<Key, Value>::operator--(int) noexcept
   {
     BSTIterator tmp = *this;
     --(*this);
@@ -170,84 +156,71 @@ namespace velizade
   }
 
   template<typename Key, typename Value>
-  bool BSTIterator<Key, Value>::operator==(const BSTIterator& other) const
+  bool BSTIterator<Key, Value>::operator==(const BSTIterator& other) const noexcept
   {
-    return current == other.current;
+    return node_ == other.node_;
   }
 
   template<typename Key, typename Value>
-  bool BSTIterator<Key, Value>::operator!=(const BSTIterator& other) const
+  bool BSTIterator<Key, Value>::operator!=(const BSTIterator& other) const noexcept
   {
     return !(*this == other);
   }
 
   template<typename Key, typename Value>
-  typename BSTIterator<Key, Value>::NodePtr BSTIterator<Key, Value>::getNode() const
+  typename BSTIterator<Key, Value>::NodePtr BSTIterator<Key, Value>::getNode() const noexcept
   {
-    return current;
+    return node_;
   }
 
   template<typename Key, typename Value>
-  BSTConstIterator<Key, Value>::BSTConstIterator(): current(nullptr), fake(nullptr)
+  BSTConstIterator<Key, Value>::BSTConstIterator(NodePtr node) noexcept:
+      node_(node ? node : std::addressof(Node<Key, Value>::fakeLeaf_))
   {}
 
   template<typename Key, typename Value>
-  BSTConstIterator<Key, Value>::BSTConstIterator(NodePtr ptr, NodePtr fk): current(ptr), fake(fk)
+  BSTConstIterator<Key, Value>::BSTConstIterator(const BSTIterator<Key, Value>& it) noexcept:
+      node_(it.getNode())
   {}
 
   template<typename Key, typename Value>
-  BSTConstIterator<Key, Value>::BSTConstIterator(const BSTIterator<Key, Value>& it)
-    : current(it.getNode()), fake(it.fake)
-  {}
-
-  template<typename Key, typename Value>
-  std::pair<const Key&, const Value&> BSTConstIterator<Key, Value>::operator*() const
+  typename BSTConstIterator<Key, Value>::reference BSTConstIterator<Key, Value>::operator*() const noexcept
   {
-    return {current->key, current->value};
+    return node_->data_;
   }
 
   template<typename Key, typename Value>
-  const Key& BSTConstIterator<Key, Value>::key() const
+  typename BSTConstIterator<Key, Value>::value_type* BSTConstIterator<Key, Value>::operator->() const noexcept
   {
-    return current->key;
+    return std::addressof(node_->data_);
   }
 
   template<typename Key, typename Value>
-  const Value& BSTConstIterator<Key, Value>::value() const
+  BSTConstIterator<Key, Value>& BSTConstIterator<Key, Value>::operator++() noexcept
   {
-    return current->value;
-  }
-
-  template<typename Key, typename Value>
-  BSTConstIterator<Key, Value>& BSTConstIterator<Key, Value>::operator++()
-  {
-    if (current == fake)
+    if (node_->right_ != std::addressof(Node<Key, Value>::fakeLeaf_))
     {
-      return *this;
-    }
-    if (current->right != fake)
-    {
-      current = current->right;
-      while (current->left != fake)
+      node_ = node_->right_;
+      while (node_->left_ != std::addressof(Node<Key, Value>::fakeLeaf_))
       {
-        current = current->left;
+        node_ = node_->left_;
       }
     }
     else
     {
-      NodePtr p = current->parent;
-      while (p != nullptr && current == p->right)
+      NodePtr p = node_->parent_;
+      while (p != nullptr && node_ == p->right_)
       {
-        current = p;
-        p = p->parent;
+        node_ = p;
+        p = p->parent_;
       }
-      current = (p == nullptr ? fake : p);
+      node_ = (p == nullptr ? std::addressof(Node<Key, Value>::fakeLeaf_) : p);
     }
     return *this;
   }
 
   template<typename Key, typename Value>
-  BSTConstIterator<Key, Value> BSTConstIterator<Key, Value>::operator++(int)
+  BSTConstIterator<Key, Value> BSTConstIterator<Key, Value>::operator++(int) noexcept
   {
     BSTConstIterator tmp = *this;
     ++(*this);
@@ -255,21 +228,57 @@ namespace velizade
   }
 
   template<typename Key, typename Value>
-  bool BSTConstIterator<Key, Value>::operator==(const BSTConstIterator& other) const
+  BSTConstIterator<Key, Value>& BSTConstIterator<Key, Value>::operator--() noexcept
   {
-    return current == other.current;
+    if (node_->isFake())
+    {
+      return *this;
+    }
+    if (node_->left_ != std::addressof(Node<Key, Value>::fakeLeaf_))
+    {
+      node_ = node_->left_;
+      while (node_->right_ != std::addressof(Node<Key, Value>::fakeLeaf_))
+      {
+        node_ = node_->right_;
+      }
+    }
+    else
+    {
+      NodePtr p = node_->parent_;
+      while (p != nullptr && node_ == p->left_)
+      {
+        node_ = p;
+        p = p->parent_;
+      }
+      node_ = (p == nullptr ? std::addressof(Node<Key, Value>::fakeLeaf_) : p);
+    }
+    return *this;
   }
 
   template<typename Key, typename Value>
-  bool BSTConstIterator<Key, Value>::operator!=(const BSTConstIterator& other) const
+  BSTConstIterator<Key, Value> BSTConstIterator<Key, Value>::operator--(int) noexcept
+  {
+    BSTConstIterator tmp = *this;
+    --(*this);
+    return tmp;
+  }
+
+  template<typename Key, typename Value>
+  bool BSTConstIterator<Key, Value>::operator==(const BSTConstIterator& other) const noexcept
+  {
+    return node_ == other.node_;
+  }
+
+  template<typename Key, typename Value>
+  bool BSTConstIterator<Key, Value>::operator!=(const BSTConstIterator& other) const noexcept
   {
     return !(*this == other);
   }
 
   template<typename Key, typename Value>
-  typename BSTConstIterator<Key, Value>::NodePtr BSTConstIterator<Key, Value>::getNode() const
+  typename BSTConstIterator<Key, Value>::NodePtr BSTConstIterator<Key, Value>::getNode() const noexcept
   {
-    return current;
+    return node_;
   }
 }
 

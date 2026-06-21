@@ -5,6 +5,7 @@
 #include "iterators.hpp"
 #include <functional>
 #include <stdexcept>
+#include <algorithm>
 
 namespace velizade
 {
@@ -13,22 +14,21 @@ namespace velizade
   {
   private:
     using NodePtr = Node<Key, Value>*;
-    NodePtr root;
-    NodePtr fake;
-    Compare comp;
+    NodePtr root_;
+    Compare comp_;
 
     NodePtr findNode(const Key& k) const
     {
-      NodePtr cur = root;
-      while (cur != fake)
+      NodePtr cur = root_;
+      while (cur != nullptr && !cur->isFake())
       {
-        if (comp(k, cur->key))
+        if (comp_(k, cur->data_.first))
         {
-          cur = cur->left;
+          cur = cur->left_;
         }
-        else if (comp(cur->key, k))
+        else if (comp_(cur->data_.first, k))
         {
-          cur = cur->right;
+          cur = cur->right_;
         }
         else
         {
@@ -40,99 +40,109 @@ namespace velizade
 
     void clear(NodePtr node)
     {
-      if (node == fake || node == nullptr)
+      if (node == nullptr || node->isFake())
       {
         return;
       }
-      clear(node->left);
-      clear(node->right);
+      clear(node->left_);
+      clear(node->right_);
       delete node;
+    }
+
+    NodePtr copyNode(NodePtr node, NodePtr parent)
+    {
+      if (node == nullptr || node->isFake())
+      {
+        return std::addressof(Node<Key, Value>::fakeLeaf_);
+      }
+      NodePtr newNode = new Node(node->data_.first, node->data_.second, parent);
+      newNode->left_ = copyNode(node->left_, newNode);
+      newNode->right_ = copyNode(node->right_, newNode);
+      return newNode;
     }
 
     size_t heightRec(NodePtr node) const
     {
-      if (node == fake || node == nullptr)
+      if (node == nullptr || node->isFake())
       {
         return 0;
       }
-      size_t hLeft = heightRec(node->left);
-      size_t hRight = heightRec(node->right);
-      return 1 + (hLeft > hRight ? hLeft : hRight);
+      return 1 + std::max(heightRec(node->left_), heightRec(node->right_));
     }
 
     NodePtr rotateLeftImpl(NodePtr x)
     {
-      if (x == fake || x->parent == nullptr)
+      if (x == nullptr || x->isFake() || x->parent_ == nullptr)
       {
         return x;
       }
-      NodePtr p = x->parent;
-      if (p->right != x)
+      NodePtr p = x->parent_;
+      if (p->right_ != x)
       {
         return x;
       }
 
-      p->right = x->left;
-      if (x->left != fake)
+      p->right_ = x->left_;
+      if (x->left_ != nullptr && !x->left_->isFake())
       {
-        x->left->parent = p;
+        x->left_->parent_ = p;
       }
 
-      x->left = p;
-      x->parent = p->parent;
+      x->left_ = p;
+      x->parent_ = p->parent_;
 
-      if (p->parent == nullptr)
+      if (p->parent_ == nullptr)
       {
-        root = x;
+        root_ = x;
       }
-      else if (p == p->parent->left)
+      else if (p == p->parent_->left_)
       {
-        p->parent->left = x;
+        p->parent_->left_ = x;
       }
       else
       {
-        p->parent->right = x;
+        p->parent_->right_ = x;
       }
 
-      p->parent = x;
+      p->parent_ = x;
       return x;
     }
 
     NodePtr rotateRightImpl(NodePtr x)
     {
-      if (x == fake || x->parent == nullptr)
+      if (x == nullptr || x->isFake() || x->parent_ == nullptr)
       {
         return x;
       }
-      NodePtr p = x->parent;
-      if (p->left != x)
+      NodePtr p = x->parent_;
+      if (p->left_ != x)
       {
         return x;
       }
 
-      p->left = x->right;
-      if (x->right != fake)
+      p->left_ = x->right_;
+      if (x->right_ != nullptr && !x->right_->isFake())
       {
-        x->right->parent = p;
+        x->right_->parent_ = p;
       }
 
-      x->right = p;
-      x->parent = p->parent;
+      x->right_ = p;
+      x->parent_ = p->parent_;
 
-      if (p->parent == nullptr)
+      if (p->parent_ == nullptr)
       {
-        root = x;
+        root_ = x;
       }
-      else if (p == p->parent->left)
+      else if (p == p->parent_->left_)
       {
-        p->parent->left = x;
+        p->parent_->left_ = x;
       }
       else
       {
-        p->parent->right = x;
+        p->parent_->right_ = x;
       }
 
-      p->parent = x;
+      p->parent_ = x;
       return x;
     }
 
@@ -140,60 +150,83 @@ namespace velizade
     using iterator = BSTIterator<Key, Value>;
     using const_iterator = BSTConstIterator<Key, Value>;
 
-    BSTree()
+    BSTree() : root_(std::addressof(Node<Key, Value>::fakeLeaf_)) {}
+
+    BSTree(const BSTree& other) : root_(std::addressof(Node<Key, Value>::fakeLeaf_))
     {
-      fake = new Node<Key, Value>();
-      root = fake;
+      root_ = copyNode(other.root_, nullptr);
+    }
+
+    BSTree(BSTree&& other) noexcept
+      : root_(std::addressof(Node<Key, Value>::fakeLeaf_))
+    {
+      std::swap(root_, other.root_);
     }
 
     ~BSTree()
     {
-      clear(root);
-      delete fake;
+      clear(root_);
+    }
+
+    BSTree& operator=(const BSTree& other)
+    {
+      if (this == &other)
+      {
+        return *this;
+      }
+      clear(root_);
+      root_ = copyNode(other.root_, nullptr);
+      return *this;
+    }
+
+    BSTree& operator=(BSTree&& other) noexcept
+    {
+      if (this == &other)
+      {
+        return *this;
+      }
+      clear(root_);
+      root_ = other.root_;
+      other.root_ = std::addressof(Node<Key, Value>::fakeLeaf_);
+      return *this;
     }
 
     void push(const Key& k, const Value& v)
     {
-      if (root == fake)
+      if (root_->isFake())
       {
-        NodePtr newNode = new Node<Key, Value>(k, v);
-        newNode->left = fake;
-        newNode->right = fake;
-        root = newNode;
+        root_ = new Node(k, v, nullptr);
         return;
       }
 
-      NodePtr cur = root;
+      NodePtr cur = root_;
       NodePtr parent = nullptr;
-      while (cur != fake)
+      while (!cur->isFake())
       {
         parent = cur;
-        if (comp(k, cur->key))
+        if (comp_(k, cur->data_.first))
         {
-          cur = cur->left;
+          cur = cur->left_;
         }
-        else if (comp(cur->key, k))
+        else if (comp_(cur->data_.first, k))
         {
-          cur = cur->right;
+          cur = cur->right_;
         }
         else
         {
-          cur->value = v;
+          cur->data_.second = v;
           return;
         }
       }
 
-      NodePtr newNode = new Node<Key, Value>(k, v);
-      newNode->left = fake;
-      newNode->right = fake;
-      newNode->parent = parent;
-      if (comp(k, parent->key))
+      NodePtr newNode = new Node(k, v, parent);
+      if (comp_(k, parent->data_.first))
       {
-        parent->left = newNode;
+        parent->left_ = newNode;
       }
       else
       {
-        parent->right = newNode;
+        parent->right_ = newNode;
       }
     }
 
@@ -204,7 +237,7 @@ namespace velizade
       {
         throw std::out_of_range("Key not found");
       }
-      return node->value;
+      return node->data_.second;
     }
 
     Value drop(const Key& k)
@@ -215,87 +248,87 @@ namespace velizade
         throw std::out_of_range("Key not found");
       }
 
-      Value val = node->value;
+      Value val = node->data_.second;
 
-      if (node->left == fake && node->right == fake)
+      if (node->left_->isFake() && node->right_->isFake())
       {
-        NodePtr p = node->parent;
+        NodePtr p = node->parent_;
         if (p == nullptr)
         {
-          root = fake;
+          root_ = std::addressof(Node<Key, Value>::fakeLeaf_);
         }
-        else if (p->left == node)
+        else if (p->left_ == node)
         {
-          p->left = fake;
+          p->left_ = std::addressof(Node<Key, Value>::fakeLeaf_);
         }
         else
         {
-          p->right = fake;
+          p->right_ = std::addressof(Node<Key, Value>::fakeLeaf_);
         }
         delete node;
         return val;
       }
 
-      if (node->left == fake || node->right == fake)
+      if (node->left_->isFake() || node->right_->isFake())
       {
-        NodePtr child = (node->left != fake) ? node->left : node->right;
-        NodePtr p = node->parent;
-        child->parent = p;
+        NodePtr child = node->left_->isFake() ? node->right_ : node->left_;
+        NodePtr p = node->parent_;
+        child->parent_ = p;
         if (p == nullptr)
         {
-          root = child;
+          root_ = child;
         }
-        else if (p->left == node)
+        else if (p->left_ == node)
         {
-          p->left = child;
+          p->left_ = child;
         }
         else
         {
-          p->right = child;
+          p->right_ = child;
         }
         delete node;
         return val;
       }
 
-      NodePtr succ = node->right;
-      while (succ->left != fake)
+      NodePtr succ = node->right_;
+      while (!succ->left_->isFake())
       {
-        succ = succ->left;
+        succ = succ->left_;
       }
 
-      Key succKey = succ->key;
-      Value succVal = succ->value;
+      Key succKey = succ->data_.first;
+      Value succVal = succ->data_.second;
 
-      NodePtr child = succ->right;
-      NodePtr p = succ->parent;
-      if (p->left == succ)
+      NodePtr child = succ->right_;
+      NodePtr p = succ->parent_;
+      if (p->left_ == succ)
       {
-        p->left = child;
+        p->left_ = child;
       }
       else
       {
-        p->right = child;
+        p->right_ = child;
       }
-      if (child != fake)
+      if (!child->isFake())
       {
-        child->parent = p;
+        child->parent_ = p;
       }
       delete succ;
 
-      node->key = succKey;
-      node->value = succVal;
+      node->data_.first = succKey;
+      node->data_.second = succVal;
       return val;
     }
 
     size_t height() const
     {
-      return heightRec(root);
+      return heightRec(root_);
     }
 
     size_t height(const_iterator it) const
     {
       NodePtr node = it.getNode();
-      if (node == fake || node == nullptr)
+      if (node == nullptr || node->isFake())
       {
         return 0;
       }
@@ -304,30 +337,30 @@ namespace velizade
 
     iterator begin()
     {
-      if (root == fake)
+      if (root_->isFake())
       {
-        return iterator(fake, fake);
+        return iterator(std::addressof(Node<Key, Value>::fakeLeaf_));
       }
-      NodePtr cur = root;
-      while (cur->left != fake)
+      NodePtr cur = root_;
+      while (!cur->left_->isFake())
       {
-        cur = cur->left;
+        cur = cur->left_;
       }
-      return iterator(cur, fake);
+      return iterator(cur);
     }
 
     const_iterator begin() const
     {
-      if (root == fake)
+      if (root_->isFake())
       {
-        return const_iterator(fake, fake);
+        return const_iterator(std::addressof(Node<Key, Value>::fakeLeaf_));
       }
-      NodePtr cur = root;
-      while (cur->left != fake)
+      NodePtr cur = root_;
+      while (!cur->left_->isFake())
       {
-        cur = cur->left;
+        cur = cur->left_;
       }
-      return const_iterator(cur, fake);
+      return const_iterator(cur);
     }
 
     const_iterator cbegin() const
@@ -337,12 +370,12 @@ namespace velizade
 
     iterator end()
     {
-      return iterator(fake, fake);
+      return iterator(std::addressof(Node<Key, Value>::fakeLeaf_));
     }
 
     const_iterator end() const
     {
-      return const_iterator(fake, fake);
+      return const_iterator(std::addressof(Node<Key, Value>::fakeLeaf_));
     }
 
     const_iterator cend() const
@@ -353,57 +386,57 @@ namespace velizade
     const_iterator rotateLeft(const_iterator it)
     {
       NodePtr x = it.getNode();
-      if (x == fake || x->parent == nullptr)
+      if (x == nullptr || x->isFake() || x->parent_ == nullptr)
       {
         return it;
       }
       NodePtr result = rotateLeftImpl(x);
-      return const_iterator(result, fake);
+      return const_iterator(result);
     }
 
     const_iterator rotateRight(const_iterator it)
     {
       NodePtr x = it.getNode();
-      if (x == fake || x->parent == nullptr)
+      if (x == nullptr || x->isFake() || x->parent_ == nullptr)
       {
         return it;
       }
       NodePtr result = rotateRightImpl(x);
-      return const_iterator(result, fake);
+      return const_iterator(result);
     }
 
     const_iterator rotateLargeLeft(const_iterator it)
     {
       NodePtr x = it.getNode();
-      if (x == fake || x->parent == nullptr)
+      if (x == nullptr || x->isFake() || x->parent_ == nullptr)
       {
         return it;
       }
-      NodePtr y = x->left;
-      if (y == fake)
+      NodePtr y = x->left_;
+      if (y->isFake())
       {
         return it;
       }
       NodePtr afterFirst = rotateRightImpl(y);
       NodePtr result = rotateLeftImpl(afterFirst);
-      return const_iterator(result, fake);
+      return const_iterator(result);
     }
 
     const_iterator rotateLargeRight(const_iterator it)
     {
       NodePtr x = it.getNode();
-      if (x == fake || x->parent == nullptr)
+      if (x == nullptr || x->isFake() || x->parent_ == nullptr)
       {
         return it;
       }
-      NodePtr y = x->right;
-      if (y == fake)
+      NodePtr y = x->right_;
+      if (y->isFake())
       {
         return it;
       }
       NodePtr afterFirst = rotateLeftImpl(y);
       NodePtr result = rotateRightImpl(afterFirst);
-      return const_iterator(result, fake);
+      return const_iterator(result);
     }
 
     bool contains(const Key& k) const
@@ -413,7 +446,7 @@ namespace velizade
 
     bool empty() const
     {
-      return root == fake;
+      return root_->isFake();
     }
   };
 }
