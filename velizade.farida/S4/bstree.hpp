@@ -52,7 +52,11 @@ namespace velizade
 
     NodePtr copyNode(NodePtr node, NodePtr parent)
     {
-      if (node == nullptr || node->isFake())
+      if (node == nullptr)
+      {
+        return std::addressof(Node<Key, Value>::fakeLeaf_);
+      }
+      if (node->isFake())
       {
         return std::addressof(Node<Key, Value>::fakeLeaf_);
       }
@@ -441,37 +445,39 @@ namespace velizade
       }
 
       NodePtr xLeft = x->left_;
+      NodePtr xRight = x->right_;
+
       p->right_ = xLeft;
-      if (xLeft != nullptr && !xLeft->isFake())
+      if (!xLeft->isFake())
       {
         xLeft->parent_ = p;
       }
-      x->left_ = p;
-      p->parent_ = x;
-      x->parent_ = g;
-      g->left_ = x;
 
-      NodePtr xRight = x->right_;
       g->left_ = xRight;
-      if (xRight != nullptr && !xRight->isFake())
+      if (!xRight->isFake())
       {
         xRight->parent_ = g;
       }
+
+      x->left_ = p;
       x->right_ = g;
       x->parent_ = g->parent_;
-      if (g->parent_ == nullptr)
+
+      p->parent_ = x;
+      g->parent_ = x;
+
+      if (x->parent_ == nullptr)
       {
         root_ = x;
       }
-      else if (g->parent_->left_ == g)
+      else if (x->parent_->left_ == g)
       {
-        g->parent_->left_ = x;
+        x->parent_->left_ = x;
       }
       else
       {
-        g->parent_->right_ = x;
+        x->parent_->right_ = x;
       }
-      g->parent_ = x;
 
       return const_iterator(x);
     }
@@ -500,38 +506,40 @@ namespace velizade
         return it;
       }
 
+      NodePtr xLeft = x->left_;
       NodePtr xRight = x->right_;
+
       p->left_ = xRight;
-      if (xRight != nullptr && !xRight->isFake())
+      if (!xRight->isFake())
       {
         xRight->parent_ = p;
       }
-      x->right_ = p;
-      p->parent_ = x;
-      x->parent_ = g;
-      g->right_ = x;
 
-      NodePtr xLeft = x->left_;
       g->right_ = xLeft;
-      if (xLeft != nullptr && !xLeft->isFake())
+      if (!xLeft->isFake())
       {
         xLeft->parent_ = g;
       }
+
       x->left_ = g;
+      x->right_ = p;
       x->parent_ = g->parent_;
-      if (g->parent_ == nullptr)
+
+      p->parent_ = x;
+      g->parent_ = x;
+
+      if (x->parent_ == nullptr)
       {
         root_ = x;
       }
-      else if (g->parent_->left_ == g)
+      else if (x->parent_->left_ == g)
       {
-        g->parent_->left_ = x;
+        x->parent_->left_ = x;
       }
       else
       {
-        g->parent_->right_ = x;
+        x->parent_->right_ = x;
       }
-      g->parent_ = x;
 
       return const_iterator(x);
     }
