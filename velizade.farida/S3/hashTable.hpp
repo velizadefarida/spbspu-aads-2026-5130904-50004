@@ -122,10 +122,6 @@ namespace velizade
 
     size_t total = buckets_ * bucketCapacity_ + overflowCapacity_;
     slots_ = Vector<Slot>(total);
-    for (size_t i = 0; i < total; ++i)
-    {
-      new (&slots_[i]) Slot();
-    }
   }
 
   template <class Key, class Value, class Hash, class Equal>
