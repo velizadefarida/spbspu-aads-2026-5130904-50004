@@ -17,6 +17,7 @@ namespace velizade
 
     Node(const Key& k, const Value& v): key(k), value(v), left(nullptr), right(nullptr), parent(nullptr), isFake(false) {}
   };
+
 }
 
 #endif
