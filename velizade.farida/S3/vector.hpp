@@ -48,11 +48,16 @@ velizade::Vector< T >::Vector() noexcept:
 {}
 
 template< class T >
-velizade::Vector< T >::Vector(size_t size):
+Vector< T >::Vector(size_t size):
   data_(size ? static_cast< T* >(::operator new(size * sizeof(T))) : nullptr),
-  size_(0),
+  size_(size),
   capacity_(size)
-{}
+{
+  for (size_t i = 0; i < size_; ++i)
+  {
+    new (data_ + i) T();
+  }
+}
 
 template< class T >
 velizade::Vector< T >::~Vector()
