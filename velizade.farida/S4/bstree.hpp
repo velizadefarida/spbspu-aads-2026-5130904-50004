@@ -164,8 +164,8 @@ namespace velizade
       root_ = copyNode(other.root_, nullptr);
     }
 
-    BSTree(BSTree&& other) noexcept
-      : root_(std::addressof(Node<Key, Value>::fakeLeaf_))
+    BSTree(BSTree&& other) noexcept:
+        root_(std::addressof(Node<Key, Value>::fakeLeaf_))
     {
       std::swap(root_, other.root_);
     }
@@ -329,6 +329,10 @@ namespace velizade
 
     size_t height() const
     {
+      if (root_->isFake())
+      {
+        return 0;
+      }
       return heightRec(root_);
     }
 
@@ -436,14 +440,15 @@ namespace velizade
         return it;
       }
 
-      p->right_ = x->left_;
-      if (x->left_ != nullptr && !x->left_->isFake())
+      NodePtr xLeft = x->left_;
+      p->right_ = xLeft;
+      if (xLeft != nullptr && !xLeft->isFake())
       {
-        x->left_->parent_ = p;
+        xLeft->parent_ = p;
       }
-
       x->left_ = p;
       p->parent_ = x;
+      x->parent_ = g;
       g->left_ = x;
 
       NodePtr xRight = x->right_;
@@ -452,7 +457,6 @@ namespace velizade
       {
         xRight->parent_ = g;
       }
-
       x->right_ = g;
       x->parent_ = g->parent_;
       if (g->parent_ == nullptr)
@@ -467,7 +471,6 @@ namespace velizade
       {
         g->parent_->right_ = x;
       }
-
       g->parent_ = x;
 
       return const_iterator(x);
@@ -497,14 +500,15 @@ namespace velizade
         return it;
       }
 
-      p->left_ = x->right_;
-      if (x->right_ != nullptr && !x->right_->isFake())
+      NodePtr xRight = x->right_;
+      p->left_ = xRight;
+      if (xRight != nullptr && !xRight->isFake())
       {
-        x->right_->parent_ = p;
+        xRight->parent_ = p;
       }
-
       x->right_ = p;
       p->parent_ = x;
+      x->parent_ = g;
       g->right_ = x;
 
       NodePtr xLeft = x->left_;
@@ -513,7 +517,6 @@ namespace velizade
       {
         xLeft->parent_ = g;
       }
-
       x->left_ = g;
       x->parent_ = g->parent_;
       if (g->parent_ == nullptr)
@@ -528,7 +531,6 @@ namespace velizade
       {
         g->parent_->right_ = x;
       }
-
       g->parent_ = x;
 
       return const_iterator(x);
