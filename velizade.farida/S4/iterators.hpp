@@ -50,6 +50,9 @@ namespace velizade
     using NodePtr = Node<Key, Value>*;
     NodePtr node_;
 
+    template <typename K, typename V, typename C>
+    friend class BSTree;
+
     BSTConstIterator(NodePtr node) noexcept;
 
   public:
