@@ -6,6 +6,7 @@
 #include <functional>
 #include <stdexcept>
 #include <algorithm>
+#include <memory>
 
 namespace velizade
 {
@@ -61,13 +62,15 @@ namespace velizade
       return newNode;
     }
 
-    size_t heightRec(NodePtr node) const
+    int heightRecInt(NodePtr node) const
     {
       if (node == nullptr || node->isFake())
       {
-        return 0;
+        return -1;
       }
-      return 1 + std::max(heightRec(node->left_), heightRec(node->right_));
+      int left = heightRecInt(node->left_);
+      int right = heightRecInt(node->right_);
+      return 1 + (left > right ? left : right);
     }
 
     NodePtr rotateLeftImpl(NodePtr x)
@@ -83,6 +86,7 @@ namespace velizade
       }
 
       NodePtr xLeft = x->left_;
+
       p->right_ = xLeft;
       if (xLeft != nullptr && !xLeft->isFake())
       {
@@ -106,6 +110,7 @@ namespace velizade
       }
 
       p->parent_ = x;
+
       return x;
     }
 
@@ -122,6 +127,7 @@ namespace velizade
       }
 
       NodePtr xRight = x->right_;
+
       p->left_ = xRight;
       if (xRight != nullptr && !xRight->isFake())
       {
@@ -145,6 +151,7 @@ namespace velizade
       }
 
       p->parent_ = x;
+
       return x;
     }
 
@@ -252,7 +259,6 @@ namespace velizade
 
       Value val = node->value;
 
-
       if (node->left_->isFake() && node->right_->isFake())
       {
         NodePtr p = node->parent_;
@@ -325,7 +331,11 @@ namespace velizade
 
     size_t height() const
     {
-      return heightRec(root_);
+      if (root_->isFake())
+      {
+        return 0;
+      }
+      return static_cast<size_t>(heightRecInt(root_));
     }
 
     size_t height(const_iterator it) const
@@ -335,7 +345,7 @@ namespace velizade
       {
         return 0;
       }
-      return heightRec(node);
+      return static_cast<size_t>(heightRecInt(node));
     }
 
     iterator begin()
@@ -432,8 +442,8 @@ namespace velizade
         return it;
       }
 
-      rotateLeftImpl(p);
-      rotateRightImpl(g);
+      rotateLeftImpl(x);
+      rotateRightImpl(x);
 
       return const_iterator(x);
     }
@@ -462,8 +472,8 @@ namespace velizade
         return it;
       }
 
-      rotateRightImpl(p);
-      rotateLeftImpl(g);
+      rotateRightImpl(x);
+      rotateLeftImpl(x);
 
       return const_iterator(x);
     }
