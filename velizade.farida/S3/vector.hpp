@@ -48,7 +48,7 @@ velizade::Vector< T >::Vector() noexcept:
 {}
 
 template< class T >
-Vector< T >::Vector(size_t size):
+velizade::Vector< T >::Vector(size_t size):
   data_(size ? static_cast< T* >(::operator new(size * sizeof(T))) : nullptr),
   size_(size),
   capacity_(size)
