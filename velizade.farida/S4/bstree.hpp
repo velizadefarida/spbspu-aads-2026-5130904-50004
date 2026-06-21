@@ -164,8 +164,8 @@ namespace velizade
       root_ = copyNode(other.root_, nullptr);
     }
 
-    BSTree(BSTree&& other) noexcept:
-        root_(std::addressof(Node<Key, Value>::fakeLeaf_))
+    BSTree(BSTree&& other) noexcept
+      : root_(std::addressof(Node<Key, Value>::fakeLeaf_))
     {
       std::swap(root_, other.root_);
     }
@@ -329,6 +329,10 @@ namespace velizade
 
     size_t height() const
     {
+      if (root_->isFake())
+      {
+        return 0;
+      }
       return heightRec(root_);
     }
 
