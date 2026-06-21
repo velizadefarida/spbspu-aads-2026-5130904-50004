@@ -62,15 +62,13 @@ namespace velizade
       return newNode;
     }
 
-    int heightRecInt(NodePtr node) const
+    size_t heightRec(NodePtr node) const
     {
       if (node == nullptr || node->isFake())
       {
-        return -1;
+        return 0;
       }
-      int left = heightRecInt(node->left_);
-      int right = heightRecInt(node->right_);
-      return 1 + (left > right ? left : right);
+      return 1 + std::max(heightRec(node->left_), heightRec(node->right_));
     }
 
     NodePtr rotateLeftImpl(NodePtr x)
@@ -166,8 +164,8 @@ namespace velizade
       root_ = copyNode(other.root_, nullptr);
     }
 
-    BSTree(BSTree&& other) noexcept
-      : root_(std::addressof(Node<Key, Value>::fakeLeaf_))
+    BSTree(BSTree&& other) noexcept:
+        root_(std::addressof(Node<Key, Value>::fakeLeaf_))
     {
       std::swap(root_, other.root_);
     }
@@ -331,11 +329,7 @@ namespace velizade
 
     size_t height() const
     {
-      if (root_->isFake())
-      {
-        return 0;
-      }
-      return static_cast<size_t>(heightRecInt(root_));
+      return heightRec(root_);
     }
 
     size_t height(const_iterator it) const
@@ -345,7 +339,7 @@ namespace velizade
       {
         return 0;
       }
-      return static_cast<size_t>(heightRecInt(node));
+      return heightRec(node);
     }
 
     iterator begin()
@@ -442,8 +436,38 @@ namespace velizade
         return it;
       }
 
-      rotateLeftImpl(x);
-      rotateRightImpl(x);
+      p->right_ = x->left_;
+      if (x->left_ != nullptr && !x->left_->isFake())
+      {
+        x->left_->parent_ = p;
+      }
+
+      x->left_ = p;
+      p->parent_ = x;
+      g->left_ = x;
+
+      g->left_ = x->right_;
+      if (x->right_ != nullptr && !x->right_->isFake())
+      {
+        x->right_->parent_ = g;
+      }
+
+      x->right_ = g;
+      x->parent_ = g->parent_;
+      if (g->parent_ == nullptr)
+      {
+        root_ = x;
+      }
+      else if (g->parent_->left_ == g)
+      {
+        g->parent_->left_ = x;
+      }
+      else
+      {
+        g->parent_->right_ = x;
+      }
+
+      g->parent_ = x;
 
       return const_iterator(x);
     }
@@ -472,8 +496,38 @@ namespace velizade
         return it;
       }
 
-      rotateRightImpl(x);
-      rotateLeftImpl(x);
+      p->left_ = x->right_;
+      if (x->right_ != nullptr && !x->right_->isFake())
+      {
+        x->right_->parent_ = p;
+      }
+
+      x->right_ = p;
+      p->parent_ = x;
+      g->right_ = x;
+
+      g->right_ = x->left_;
+      if (x->left_ != nullptr && !x->left_->isFake())
+      {
+        x->left_->parent_ = g;
+      }
+
+      x->left_ = g;
+      x->parent_ = g->parent_;
+      if (g->parent_ == nullptr)
+      {
+        root_ = x;
+      }
+      else if (g->parent_->left_ == g)
+      {
+        g->parent_->left_ = x;
+      }
+      else
+      {
+        g->parent_->right_ = x;
+      }
+
+      g->parent_ = x;
 
       return const_iterator(x);
     }
