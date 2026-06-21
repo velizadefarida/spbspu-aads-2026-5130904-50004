@@ -11,7 +11,8 @@ namespace velizade
     Node();
     Node(const Key& k, const Value& v, Node* parent = nullptr);
 
-    std::pair<const Key, Value> data_;
+    Key key;
+    Value value;
     Node* left_;
     Node* right_;
     Node* parent_;
@@ -24,7 +25,8 @@ namespace velizade
 
 template<typename Key, typename Value>
 velizade::Node<Key, Value>::Node():
-    data_(),
+    key(),
+    value(),
     left_(nullptr),
     right_(nullptr),
     parent_(nullptr)
@@ -34,7 +36,8 @@ velizade::Node<Key, Value>::Node():
 
 template<typename Key, typename Value>
 velizade::Node<Key, Value>::Node(const Key& k, const Value& v, Node* parent):
-    data_(k, v),
+    key(k),
+    value(v),
     left_(std::addressof(fakeLeaf_)),
     right_(std::addressof(fakeLeaf_)),
     parent_(parent)

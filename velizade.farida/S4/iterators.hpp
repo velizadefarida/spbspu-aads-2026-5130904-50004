@@ -22,10 +22,13 @@ namespace velizade
     BSTIterator(NodePtr node) noexcept;
 
   public:
-    using value_type = std::pair<const Key, Value>;
+    using value_type = std::pair<Key, Value>;
     using reference = value_type&;
 
     BSTIterator() = default;
+
+    Key& key() const noexcept;
+    Value& value() const noexcept;
 
     reference operator*() const noexcept;
     value_type* operator->() const noexcept;
@@ -50,11 +53,14 @@ namespace velizade
     BSTConstIterator(NodePtr node) noexcept;
 
   public:
-    using value_type = const std::pair<const Key, Value>;
-    using reference = value_type&;
+    using value_type = const std::pair<Key, Value>;
+    using reference = const value_type&;
 
     BSTConstIterator() = default;
     BSTConstIterator(const BSTIterator<Key, Value>& it) noexcept;
+
+    const Key& key() const noexcept;
+    const Value& value() const noexcept;
 
     reference operator*() const noexcept;
     value_type* operator->() const noexcept;
@@ -71,20 +77,32 @@ namespace velizade
   };
 
   template<typename Key, typename Value>
-  BSTIterator<Key, Value>::BSTIterator(NodePtr node) noexcept:
-      node_(node ? node : std::addressof(Node<Key, Value>::fakeLeaf_))
+  BSTIterator<Key, Value>::BSTIterator(NodePtr node) noexcept
+    : node_(node ? node : std::addressof(Node<Key, Value>::fakeLeaf_))
   {}
+
+  template<typename Key, typename Value>
+  Key& BSTIterator<Key, Value>::key() const noexcept
+  {
+    return node_->key;
+  }
+
+  template<typename Key, typename Value>
+  Value& BSTIterator<Key, Value>::value() const noexcept
+  {
+    return node_->value;
+  }
 
   template<typename Key, typename Value>
   typename BSTIterator<Key, Value>::reference BSTIterator<Key, Value>::operator*() const noexcept
   {
-    return node_->data_;
+    return {node_->key, node_->value};
   }
 
   template<typename Key, typename Value>
   typename BSTIterator<Key, Value>::value_type* BSTIterator<Key, Value>::operator->() const noexcept
   {
-    return std::addressof(node_->data_);
+    return std::addressof(**this);
   }
 
   template<typename Key, typename Value>
@@ -184,15 +202,27 @@ namespace velizade
   {}
 
   template<typename Key, typename Value>
+  const Key& BSTConstIterator<Key, Value>::key() const noexcept
+  {
+    return node_->key;
+  }
+
+  template<typename Key, typename Value>
+  const Value& BSTConstIterator<Key, Value>::value() const noexcept
+  {
+    return node_->value;
+  }
+
+  template<typename Key, typename Value>
   typename BSTConstIterator<Key, Value>::reference BSTConstIterator<Key, Value>::operator*() const noexcept
   {
-    return node_->data_;
+    return {node_->key, node_->value};
   }
 
   template<typename Key, typename Value>
   typename BSTConstIterator<Key, Value>::value_type* BSTConstIterator<Key, Value>::operator->() const noexcept
   {
-    return std::addressof(node_->data_);
+    return std::addressof(**this);
   }
 
   template<typename Key, typename Value>

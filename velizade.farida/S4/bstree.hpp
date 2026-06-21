@@ -22,11 +22,11 @@ namespace velizade
       NodePtr cur = root_;
       while (cur != nullptr && !cur->isFake())
       {
-        if (comp_(k, cur->data_.first))
+        if (comp_(k, cur->key))
         {
           cur = cur->left_;
         }
-        else if (comp_(cur->data_.first, k))
+        else if (comp_(cur->key, k))
         {
           cur = cur->right_;
         }
@@ -55,7 +55,7 @@ namespace velizade
       {
         return std::addressof(Node<Key, Value>::fakeLeaf_);
       }
-      NodePtr newNode = new Node(node->data_.first, node->data_.second, parent);
+      NodePtr newNode = new Node<Key, Value>(node->key, node->value, parent);
       newNode->left_ = copyNode(node->left_, newNode);
       newNode->right_ = copyNode(node->right_, newNode);
       return newNode;
@@ -195,7 +195,7 @@ namespace velizade
     {
       if (root_->isFake())
       {
-        root_ = new Node(k, v, nullptr);
+        root_ = new Node<Key, Value>(k, v, nullptr);
         return;
       }
 
@@ -204,23 +204,23 @@ namespace velizade
       while (!cur->isFake())
       {
         parent = cur;
-        if (comp_(k, cur->data_.first))
+        if (comp_(k, cur->key))
         {
           cur = cur->left_;
         }
-        else if (comp_(cur->data_.first, k))
+        else if (comp_(cur->key, k))
         {
           cur = cur->right_;
         }
         else
         {
-          cur->data_.second = v;
+          cur->value = v;
           return;
         }
       }
 
-      NodePtr newNode = new Node(k, v, parent);
-      if (comp_(k, parent->data_.first))
+      NodePtr newNode = new Node<Key, Value>(k, v, parent);
+      if (comp_(k, parent->key))
       {
         parent->left_ = newNode;
       }
@@ -237,7 +237,7 @@ namespace velizade
       {
         throw std::out_of_range("Key not found");
       }
-      return node->data_.second;
+      return node->value;
     }
 
     Value drop(const Key& k)
@@ -248,7 +248,8 @@ namespace velizade
         throw std::out_of_range("Key not found");
       }
 
-      Value val = node->data_.second;
+      Value val = node->value;
+
 
       if (node->left_->isFake() && node->right_->isFake())
       {
@@ -296,8 +297,8 @@ namespace velizade
         succ = succ->left_;
       }
 
-      Key succKey = succ->data_.first;
-      Value succVal = succ->data_.second;
+      Key succKey = succ->key;
+      Value succVal = succ->value;
 
       NodePtr child = succ->right_;
       NodePtr p = succ->parent_;
@@ -315,8 +316,8 @@ namespace velizade
       }
       delete succ;
 
-      node->data_.first = succKey;
-      node->data_.second = succVal;
+      node->key = succKey;
+      node->value = succVal;
       return val;
     }
 
