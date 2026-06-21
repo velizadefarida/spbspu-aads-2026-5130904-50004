@@ -21,6 +21,7 @@ namespace velizade
 
     bool isFake() const noexcept;
   };
+
 }
 
 template<typename Key, typename Value>
