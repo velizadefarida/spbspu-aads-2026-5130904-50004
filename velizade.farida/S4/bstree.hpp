@@ -415,14 +415,27 @@ namespace velizade
       {
         return it;
       }
-      NodePtr y = x->left_;
-      if (y->isFake())
+
+      NodePtr p = x->parent_;
+      if (p == nullptr)
       {
         return it;
       }
-      NodePtr afterFirst = rotateRightImpl(y);
-      NodePtr result = rotateLeftImpl(afterFirst);
-      return const_iterator(result);
+      NodePtr g = p->parent_;
+      if (g == nullptr)
+      {
+        return it;
+      }
+
+      if (p->right_ != x || g->left_ != p)
+      {
+        return it;
+      }
+
+      rotateRightImpl(p);
+      rotateLeftImpl(g);
+
+      return const_iterator(x);
     }
 
     const_iterator rotateLargeRight(const_iterator it)
@@ -432,14 +445,27 @@ namespace velizade
       {
         return it;
       }
-      NodePtr y = x->right_;
-      if (y->isFake())
+
+      NodePtr p = x->parent_;
+      if (p == nullptr)
       {
         return it;
       }
-      NodePtr afterFirst = rotateLeftImpl(y);
-      NodePtr result = rotateRightImpl(afterFirst);
-      return const_iterator(result);
+      NodePtr g = p->parent_;
+      if (g == nullptr)
+      {
+        return it;
+      }
+
+      if (p->left_ != x || g->right_ != p)
+      {
+        return it;
+      }
+
+      rotateLeftImpl(p);
+      rotateRightImpl(g);
+
+      return const_iterator(x);
     }
 
     bool contains(const Key& k) const
