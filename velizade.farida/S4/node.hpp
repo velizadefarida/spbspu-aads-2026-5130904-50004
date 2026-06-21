@@ -13,10 +13,9 @@ namespace velizade
     Node* parent;
     bool isFake;
 
-    Node() : isFake(true), left(nullptr), right(nullptr), parent(nullptr) {}
+    Node() : left(nullptr), right(nullptr), parent(nullptr), isFake(true) {}
 
-    Node(const Key& k, const Value& v):
-        key(k), value(v), left(nullptr), right(nullptr), parent(nullptr), isFake(false) {}
+    Node(const Key& k, const Value& v): key(k), value(v), left(nullptr), right(nullptr), parent(nullptr), isFake(false) {}
   };
 }
 
