@@ -82,10 +82,11 @@ namespace velizade
         return x;
       }
 
-      p->right_ = x->left_;
-      if (x->left_ != nullptr && !x->left_->isFake())
+      NodePtr xLeft = x->left_;
+      p->right_ = xLeft;
+      if (xLeft != nullptr && !xLeft->isFake())
       {
-        x->left_->parent_ = p;
+        xLeft->parent_ = p;
       }
 
       x->left_ = p;
@@ -95,7 +96,7 @@ namespace velizade
       {
         root_ = x;
       }
-      else if (p == p->parent_->left_)
+      else if (p->parent_->left_ == p)
       {
         p->parent_->left_ = x;
       }
@@ -120,10 +121,11 @@ namespace velizade
         return x;
       }
 
-      p->left_ = x->right_;
-      if (x->right_ != nullptr && !x->right_->isFake())
+      NodePtr xRight = x->right_;
+      p->left_ = xRight;
+      if (xRight != nullptr && !xRight->isFake())
       {
-        x->right_->parent_ = p;
+        xRight->parent_ = p;
       }
 
       x->right_ = p;
@@ -133,7 +135,7 @@ namespace velizade
       {
         root_ = x;
       }
-      else if (p == p->parent_->left_)
+      else if (p->parent_->left_ == p)
       {
         p->parent_->left_ = x;
       }
