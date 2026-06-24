@@ -3,7 +3,8 @@
 
 #include <cstddef>
 
-namespace velizade {
+namespace velizade
+{
 
   template <typename T>
   class Vector
@@ -34,7 +35,6 @@ namespace velizade {
     const T* begin() const;
     const T* end() const;
   };
-
 }
 
 template <typename T>

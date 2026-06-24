@@ -3,7 +3,8 @@
 
 #include <string>
 
-namespace velizade {
+namespace velizade
+{
 
   enum class Status
   {
@@ -14,7 +15,6 @@ namespace velizade {
 
   std::string statusToString(Status s);
   Status stringToStatus(const std::string& str);
-
 }
 
 #endif

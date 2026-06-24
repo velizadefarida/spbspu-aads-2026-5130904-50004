@@ -7,8 +7,8 @@
 #include "avl_tree.hpp"
 #include "vector.hpp"
 
-namespace velizade {
-
+namespace velizade
+{
   class LibraryManager
   {
   private:
@@ -41,7 +41,6 @@ namespace velizade {
     bool exportData(const std::string& filename) const;
     bool importData(const std::string& filename);
   };
-
 }
 
 #endif

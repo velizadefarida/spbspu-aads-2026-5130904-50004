@@ -3,15 +3,14 @@
 
 #include <string>
 
-namespace velizade {
-
+namespace velizade
+{
   struct Book
   {
     std::string author;
     std::string title;
     int year;
   };
-
 }
 
 #endif
