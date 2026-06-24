@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <utility>
 
-namespace velizade {
-
+namespace velizade
+{
   template <typename K, typename T>
   struct AVLNode
   {
@@ -38,6 +38,7 @@ namespace velizade {
     bool findNode(AVLNode<K, T>* node, const K& key, T& value) const;
     void copyTree(AVLNode<K, T>*& dest, const AVLNode<K, T>* src);
     AVLNode<K, T>* findNodePtr(AVLNode<K, T>* node, const K& key);
+    AVLNode<K, T>* findNodePtr(AVLNode<K, T>* node, const K& key) const;
 
   public:
     AVLTree();
@@ -52,15 +53,15 @@ namespace velizade {
     bool find(const K& key, T& value) const;
     bool find(const K& key) const;
     T* findPtr(const K& key);
+    const T* findPtr(const K& key) const;
     Vector<std::pair<K, T>> getAll() const;
     void clear();
   };
-
 }
 
 template <typename K, typename T>
-velizade::AVLNode<K, T>::AVLNode(const K& k, const T& v)
-  : key(k), value(v), left(nullptr), right(nullptr), height(1) {}
+velizade::AVLNode<K, T>::AVLNode(const K& k, const T& v):
+    key(k), value(v), left(nullptr), right(nullptr), height(1) {}
 
 template <typename K, typename T>
 int velizade::AVLTree<K, T>::height(AVLNode<K, T>* node) const
@@ -267,6 +268,20 @@ velizade::AVLNode<K, T>* velizade::AVLTree<K, T>::findNodePtr(AVLNode<K, T>* nod
 }
 
 template <typename K, typename T>
+velizade::AVLNode<K, T>* velizade::AVLTree<K, T>::findNodePtr(AVLNode<K, T>* node, const K& key) const
+{
+  if (!node)
+  {
+    return nullptr;
+  }
+  if (key == node->key)
+  {
+    return node;
+  }
+  return (key < node->key) ? findNodePtr(node->left, key) : findNodePtr(node->right, key);
+}
+
+template <typename K, typename T>
 velizade::AVLTree<K, T>::AVLTree() : root(nullptr) {}
 
 template <typename K, typename T>
@@ -356,9 +371,16 @@ T* velizade::AVLTree<K, T>::findPtr(const K& key)
 }
 
 template <typename K, typename T>
-Vector<std::pair<K, T>> velizade::AVLTree<K, T>::getAll() const
+const T* velizade::AVLTree<K, T>::findPtr(const K& key) const
 {
-  Vector<std::pair<K, T>> res;
+  AVLNode<K, T>* node = findNodePtr(root, key);
+  return node ? &(node->value) : nullptr;
+}
+
+template <typename K, typename T>
+velizade::Vector<std::pair<K, T>> velizade::AVLTree<K, T>::getAll() const
+{
+  velizade::Vector<std::pair<K, T>> res;
   inorderCollect(root, res);
   return res;
 }

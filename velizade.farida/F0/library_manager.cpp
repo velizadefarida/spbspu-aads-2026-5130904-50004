@@ -119,7 +119,7 @@ bool velizade::LibraryManager::listList(const std::string& listName, Vector<std:
 {
   if (isPersonal(listName))
   {
-    AVLTree<int, Status>* list = personalLists.findPtr(listName);
+    const AVLTree<int, Status>* list = personalLists.findPtr(listName);
     if (!list)
     {
       return false;
@@ -140,7 +140,7 @@ bool velizade::LibraryManager::listList(const std::string& listName, Vector<std:
   }
   if (isDerived(listName))
   {
-    AVLTree<int, bool>* list = derivedLists.findPtr(listName);
+    const AVLTree<int, bool>* list = derivedLists.findPtr(listName);
     if (!list)
     {
       return false;
