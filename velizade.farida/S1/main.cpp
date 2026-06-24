@@ -78,6 +78,21 @@ int main()
     }
     columns.reverse();
 
+    for (auto col = ++columns.cbegin(); col != columns.cend(); ++col)
+    {
+      bool first = true;
+      for (auto val = ++col->cbegin(); val != col->cend(); ++val)
+      {
+        if (!first)
+        {
+          std::cout << ' ';
+        }
+        std::cout << *val;
+        first = false;
+      }
+      std::cout << "\n";
+    }
+
     velizade::List< unsigned long long > sums;
     for (auto col = ++columns.cbegin(); col != columns.cend(); ++col)
     {
@@ -93,21 +108,6 @@ int main()
       sums.push_front(colSum);
     }
     sums.reverse();
-
-    for (auto col = ++columns.cbegin(); col != columns.cend(); ++col)
-    {
-      bool first = true;
-      for (auto val = ++col->cbegin(); val != col->cend(); ++val)
-      {
-        if (!first)
-        {
-          std::cout << ' ';
-        }
-        std::cout << *val;
-        first = false;
-      }
-      std::cout << "\n";
-    }
 
     if (!sums.empty())
     {
