@@ -132,7 +132,8 @@ bool velizade::LibraryManager::listList(const std::string& listName, Vector<std:
       Book book;
       if (globalCatalog.find(p.first, book))
       {
-        output.push_back(std::to_string(p.first) + " " + book.author + " " + book.title + " " + std::to_string(book.year) + " Status: " + statusToString(p.second));
+        output.push_back(std::to_string(p.first) + " " + book.author + " " + book.title + " " + std::to_string(book.year)
+                                                 + " Status: " + statusToString(p.second));
       }
     }
     return true;
