@@ -79,34 +79,35 @@ int main()
     columns.reverse();
 
     velizade::List< unsigned long long > sums;
-
     for (auto col = ++columns.cbegin(); col != columns.cend(); ++col)
     {
       unsigned long long colSum = 0;
-      auto it = ++col->cbegin();
-      if (it != col->cend())
+      for (auto val = ++col->cbegin(); val != col->cend(); ++val)
       {
-        std::cout << *it;
-        if (colSum > std::numeric_limits< unsigned long long >::max() - *it)
+        if (colSum > std::numeric_limits< unsigned long long >::max() - *val)
         {
           throw std::overflow_error("overflow");
         }
-        colSum += *it;
-        ++it;
-        for (; it != col->cend(); ++it)
-        {
-          std::cout << ' ' << *it;
-          if (colSum > std::numeric_limits< unsigned long long >::max() - *it)
-          {
-            throw std::overflow_error("overflow");
-          }
-          colSum += *it;
-        }
+        colSum += *val;
       }
-      std::cout << "\n";
       sums.push_front(colSum);
     }
     sums.reverse();
+
+    for (auto col = ++columns.cbegin(); col != columns.cend(); ++col)
+    {
+      bool first = true;
+      for (auto val = ++col->cbegin(); val != col->cend(); ++val)
+      {
+        if (!first)
+        {
+          std::cout << ' ';
+        }
+        std::cout << *val;
+        first = false;
+      }
+      std::cout << "\n";
+    }
 
     if (!sums.empty())
     {
@@ -136,4 +137,3 @@ int main()
     return 1;
   }
 }
-
