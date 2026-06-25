@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     input = &file;
   }
 
-  velizade::Stack<long long> results;
+  velizade::Stack< long long > results;
   std::string line;
 
   while (std::getline(*input, line)) {

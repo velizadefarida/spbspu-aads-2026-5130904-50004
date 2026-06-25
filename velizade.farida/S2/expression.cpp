@@ -112,8 +112,8 @@ long long velizade::applyOperator(long long a, long long b, const std::string& o
   throw std::runtime_error("Unknown operator: " + op);
 }
 
-static velizade::List<std::string> tokenize(const std::string& line) {
-  velizade::List<std::string> tokens;
+static velizade::List< std::string > tokenize(const std::string& line) {
+  velizade::List< std::string > tokens;
   for (size_t i = 0; i < line.size(); ) {
     if (std::isspace(line[i])) {
       ++i;
@@ -142,11 +142,11 @@ static velizade::List<std::string> tokenize(const std::string& line) {
   return tokens;
 }
 
-velizade::Queue<std::string> velizade::convertToPostfix(const std::string& line) {
-  velizade::List<std::string> tokens = tokenize(line);
+velizade::Queue< std::string > velizade::convertToPostfix(const std::string& line) {
+  velizade::List< std::string > tokens = tokenize(line);
 
-  velizade::Queue<std::string> output;
-  velizade::Stack<std::string> ops;
+  velizade::Queue< std::string > output;
+  velizade::Stack< std::string > ops;
 
   while (!tokens.empty()) {
     std::string tok = tokens.front();
@@ -183,8 +183,8 @@ velizade::Queue<std::string> velizade::convertToPostfix(const std::string& line)
   return output;
 }
 
-long long velizade::calculatePostfix(velizade::Queue<std::string>& postfix) {
-  velizade::Stack<long long> values;
+long long velizade::calculatePostfix(velizade::Queue< std::string >& postfix) {
+  velizade::Stack< long long > values;
 
   while (!postfix.empty()) {
     std::string token = postfix.pop();
@@ -219,6 +219,6 @@ long long velizade::calculateExpression(const std::string& line) {
   if (line.empty()) {
     throw std::runtime_error("Empty expression");
   }
-  velizade::Queue<std::string> postfix = velizade::convertToPostfix(line);
+  velizade::Queue< std::string > postfix = velizade::convertToPostfix(line);
   return velizade::calculatePostfix(postfix);
 }
