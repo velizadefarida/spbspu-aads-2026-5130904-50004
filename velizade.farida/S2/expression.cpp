@@ -2,46 +2,47 @@
 #include <limits>
 #include <cctype>
 #include <stdexcept>
+#include <vector>
 
-static long long safe_add(long long a, long long b) {
+static bool willAdditionOverflow(long long a, long long b) {
   if (b > 0 && a > std::numeric_limits<long long>::max() - b) {
-    throw std::runtime_error("Addition overflow");
+    return true;
   }
   if (b < 0 && a < std::numeric_limits<long long>::min() - b) {
-    throw std::runtime_error("Addition overflow");
+    return true;
   }
-  return a + b;
+  return false;
 }
 
-static long long safe_sub(long long a, long long b) {
+static bool willSubtractionOverflow(long long a, long long b) {
   if (b > 0 && a < std::numeric_limits<long long>::min() + b) {
-    throw std::runtime_error("Subtraction overflow");
+    return true;
   }
   if (b < 0 && a > std::numeric_limits<long long>::max() + b) {
-    throw std::runtime_error("Subtraction overflow");
+    return true;
   }
-  return a - b;
+  return false;
 }
 
-static long long safe_mul(long long a, long long b) {
+static bool willMultiplicationOverflow(long long a, long long b) {
   if (a == 0 || b == 0) {
-    return 0;
+    return false;
   }
   long long max_val = std::numeric_limits<long long>::max();
   long long min_val = std::numeric_limits<long long>::min();
   if (a > 0 && b > 0 && a > max_val / b) {
-    throw std::runtime_error("Multiplication overflow");
+    return true;
   }
   if (a > 0 && b < 0 && b < min_val / a) {
-    throw std::runtime_error("Multiplication overflow");
+    return true;
   }
   if (a < 0 && b > 0 && a < min_val / b) {
-    throw std::runtime_error("Multiplication overflow");
+    return true;
   }
   if (a < 0 && b < 0 && a < max_val / b) {
-    throw std::runtime_error("Multiplication overflow");
+    return true;
   }
-  return a * b;
+  return false;
 }
 
 static long long positiveMod(long long a, long long b) {
@@ -80,13 +81,22 @@ bool velizade::isNumber(const std::string& token) {
 
 long long velizade::applyOperator(long long a, long long b, const std::string& op) {
   if (op == "+") {
-    return safe_add(a, b);
+    if (willAdditionOverflow(a, b)) {
+      throw std::runtime_error("Addition overflow");
+    }
+    return a + b;
   }
   if (op == "-") {
-    return safe_sub(a, b);
+    if (willSubtractionOverflow(a, b)) {
+      throw std::runtime_error("Subtraction overflow");
+    }
+    return a - b;
   }
   if (op == "*") {
-    return safe_mul(a, b);
+    if (willMultiplicationOverflow(a, b)) {
+      throw std::runtime_error("Multiplication overflow");
+    }
+    return a * b;
   }
   if (op == "/") {
     if (b == 0) {
@@ -112,21 +122,30 @@ long long velizade::applyOperator(long long a, long long b, const std::string& o
   throw std::runtime_error("Unknown operator: " + op);
 }
 
-static velizade::List<std::string> tokenize(const std::string& line) {
-  velizade::List<std::string> tokens;
-  for (size_t i = 0; i < line.size(); ) {
+static std::vector<std::string> tokenize(const std::string& line) {
+  std::vector<std::string> tokens;
+  size_t i = 0;
+  while (i < line.size()) {
     if (std::isspace(line[i])) {
       ++i;
-    } else if (line[i] == '(' || line[i] == ')') {
+      continue;
+    }
+    if (line[i] == '(' || line[i] == ')') {
       tokens.push_back(std::string(1, line[i]));
       ++i;
-    } else if (line[i] == '>' && i + 1 < line.size() && line[i + 1] == '>') {
+      continue;
+    }
+    if (line[i] == '>' && i + 1 < line.size() && line[i+1] == '>') {
       tokens.push_back(">>");
       i += 2;
-    } else if (line[i] == '+' || line[i] == '-' || line[i] == '*' || line[i] == '/' || line[i] == '%') {
+      continue;
+    }
+    if (line[i] == '+' || line[i] == '-' || line[i] == '*' || line[i] == '/' || line[i] == '%') {
       tokens.push_back(std::string(1, line[i]));
       ++i;
-    } else if (std::isdigit(line[i]) || (line[i] == '-' && i + 1 < line.size() && std::isdigit(line[i + 1]))) {
+      continue;
+    }
+    if (std::isdigit(line[i]) || (line[i] == '-' && i + 1 < line.size() && std::isdigit(line[i+1]))) {
       size_t start = i;
       if (line[i] == '-') {
         ++i;
@@ -135,21 +154,20 @@ static velizade::List<std::string> tokenize(const std::string& line) {
         ++i;
       }
       tokens.push_back(line.substr(start, i - start));
-    } else {
-      throw std::runtime_error("Invalid character in expression");
+      continue;
     }
+    throw std::runtime_error("Invalid character in expression");
   }
   return tokens;
 }
 
 velizade::Queue<std::string> velizade::convertToPostfix(const std::string& line) {
-  velizade::List<std::string> tokens = tokenize(line);
+  std::vector<std::string> tokens = tokenize(line);
 
   velizade::Queue<std::string> output;
   velizade::Stack<std::string> ops;
 
-  for (auto it = tokens.begin(); it != tokens.end(); ++it) {
-    const std::string& tok = *it;
+  for (const std::string& tok : tokens) {
     if (velizade::isNumber(tok)) {
       output.push(tok);
     } else if (tok == "(") {
