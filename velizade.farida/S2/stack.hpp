@@ -70,3 +70,5 @@ namespace velizade {
     return list_.size();
   }
 }
+
+#endif
