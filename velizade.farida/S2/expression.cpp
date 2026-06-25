@@ -148,8 +148,10 @@ velizade::Queue<std::string> velizade::convertToPostfix(const std::string& line)
   velizade::Queue<std::string> output;
   velizade::Stack<std::string> ops;
 
-  for (auto it = tokens.begin(); it != tokens.end(); ++it) {
-    const std::string& tok = *it;
+  while (!tokens.empty()) {
+    std::string tok = tokens.front();
+    tokens.pop_front();
+
     if (velizade::isNumber(tok)) {
       output.push(tok);
     } else if (tok == "(") {
