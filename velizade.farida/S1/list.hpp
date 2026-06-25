@@ -42,6 +42,8 @@ namespace velizade
     void push_front(const T& value);
     void push_front(T&& value);
     void pop_front();
+    void push_back(const T& value);
+    void push_back(T&& value);
 
     LIter< T > insert_after(LCIter< T > pos, const T& value);
     LIter< T > insert_after(LCIter< T > pos, T&& value);
@@ -233,6 +235,30 @@ namespace velizade
     head->next = to_delete->next;
     delete to_delete;
     --size_;
+  }
+
+  template< class T >
+  void List< T >::push_back(const T& value)
+  {
+    Node< T >* cur = head;
+    while (cur->next)
+    {
+      cur = cur->next;
+    }
+    cur->next = new Node< T >(value);
+    ++size_;
+  }
+
+  template< class T >
+  void List< T >::push_back(T&& value)
+  {
+    Node< T >* cur = head;
+    while (cur->next)
+    {
+      cur = cur->next;
+    }
+    cur->next = new Node< T >(std::move(value));
+    ++size_;
   }
 
   template< class T >
