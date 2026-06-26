@@ -61,22 +61,6 @@ void velizade::CommandDispatcher::execute(std::istream& in, std::ostream& out)
   }
 }
 
-void velizade::CommandDispatcher::require(bool condition) const
-{
-  if (!condition)
-  {
-    throw std::runtime_error("Invalid argument");
-  }
-}
-
-void velizade::CommandDispatcher::requireInput(std::istream& in) const
-{
-  if (in.fail())
-  {
-    throw std::runtime_error("Invalid input");
-  }
-}
-
 bool velizade::CommandDispatcher::isNumberValid(const std::string& str) const
 {
   if (str.empty())
