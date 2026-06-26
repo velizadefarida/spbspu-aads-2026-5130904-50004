@@ -6,7 +6,7 @@
 
 namespace velizade {
 
-  template<class T>
+  template< class T >
   class Stack {
   public:
     Stack() = default;
@@ -21,21 +21,21 @@ namespace velizade {
     size_t size() const noexcept;
 
   private:
-    List<T> list_;
+    List< T > list_;
   };
 
-  template<class T>
-  void Stack<T>::push(const T& value) {
+  template< class T >
+  void Stack< T >::push(const T& value) {
     list_.push_front(value);
   }
 
-  template<class T>
-  void Stack<T>::push(T&& value) {
+  template< class T >
+  void Stack< T >::push(T&& value) {
     list_.push_front(std::move(value));
   }
 
-  template<class T>
-  T Stack<T>::pop() {
+  template< class T >
+  T Stack< T >::pop() {
     if (empty()) {
       throw std::runtime_error("Stack::pop on empty stack");
     }
@@ -44,29 +44,29 @@ namespace velizade {
     return value;
   }
 
-  template<class T>
-  T& Stack<T>::top() {
+  template< class T >
+  T& Stack< T >::top() {
     if (empty()) {
       throw std::runtime_error("Stack::top on empty stack");
     }
     return list_.front();
   }
 
-  template<class T>
-  const T& Stack<T>::top() const {
+  template< class T >
+  const T& Stack< T >::top() const {
     if (empty()) {
       throw std::runtime_error("Stack::top on empty stack");
     }
     return list_.front();
   }
 
-  template<class T>
-  bool Stack<T>::empty() const noexcept {
+  template< class T >
+  bool Stack< T >::empty() const noexcept {
     return list_.empty();
   }
 
-  template<class T>
-  size_t Stack<T>::size() const noexcept {
+  template< class T >
+  size_t Stack< T >::size() const noexcept {
     return list_.size();
   }
 }
