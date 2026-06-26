@@ -1,7 +1,7 @@
 #include "expression.hpp"
+#include "stack.hpp"
 #include <iostream>
 #include <fstream>
-#include <vector>
 #include <string>
 
 int main(int argc, char* argv[]) {
@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     input = &file;
   }
 
-  std::vector<long long> results;
+  velizade::Stack< long long > results;
   std::string line;
 
   while (std::getline(*input, line)) {
@@ -25,18 +25,21 @@ int main(int argc, char* argv[]) {
       continue;
     }
     try {
-      results.push_back(velizade::calculateExpression(line));
+      results.push(velizade::calculateExpression(line));
     } catch (const std::exception& e) {
       std::cerr << "Error: " << e.what() << "\n";
       return 1;
     }
   }
 
-  for (auto it = results.rbegin(); it != results.rend(); ++it) {
-    if (it != results.rbegin()) {
+  bool first = true;
+  while (!results.empty()) {
+    if (!first) {
       std::cout << ' ';
     }
-    std::cout << *it;
+    first = false;
+    std::cout << results.top();
+    results.pop();
   }
   std::cout << "\n";
   return 0;
