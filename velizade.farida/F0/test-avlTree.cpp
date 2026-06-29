@@ -2,6 +2,8 @@
 #include "avl_tree.hpp"
 #include <vector>
 
+using namespace velizade;
+
 BOOST_AUTO_TEST_SUITE(AVLTreeTest)
 
 BOOST_AUTO_TEST_CASE(InsertAndFind)

@@ -1,6 +1,8 @@
 #include <boost/test/unit_test.hpp>
 #include "vector.hpp"
 
+using namespace velizade;
+
 BOOST_AUTO_TEST_SUITE(VectorTest)
 
 BOOST_AUTO_TEST_CASE(DefaultConstructor)
