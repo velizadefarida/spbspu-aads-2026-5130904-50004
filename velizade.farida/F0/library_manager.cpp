@@ -19,7 +19,7 @@ bool velizade::LibraryManager::listExists(const std::string& name) const
   return isPersonal(name) || isDerived(name);
 }
 
-AVLTree<int, velizade::Status>* velizade::LibraryManager::getPersonalListPtr(const std::string& name)
+velizade::AVLTree<int, velizade::Status>* velizade::LibraryManager::getPersonalListPtr(const std::string& name)
 {
   AVLTree<int, Status>* ptr = personalLists.findPtr(name);
   if (!ptr)
@@ -31,7 +31,7 @@ AVLTree<int, velizade::Status>* velizade::LibraryManager::getPersonalListPtr(con
   return ptr;
 }
 
-AVLTree<int, bool>* velizade::LibraryManager::getDerivedListPtr(const std::string& name)
+velizade::AVLTree<int, bool>* velizade::LibraryManager::getDerivedListPtr(const std::string& name)
 {
   AVLTree<int, bool>* ptr = derivedLists.findPtr(name);
   if (!ptr)
