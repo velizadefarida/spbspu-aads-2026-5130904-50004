@@ -13,18 +13,18 @@ namespace velizade
   class LibraryManager
   {
   private:
-    AVLTree<int, Book> globalCatalog;
-    AVLTree<std::string, AVLTree<int, Status>> personalLists;
-    AVLTree<std::string, AVLTree<int, bool>> derivedLists;
+    AVLTree< int, Book > globalCatalog;
+    AVLTree< std::string, AVLTree< int, Status > > personalLists;
+    AVLTree< std::string, AVLTree< int, bool > > derivedLists;
 
     bool isPersonal(const std::string& name) const;
     bool isDerived(const std::string& name) const;
     bool listExists(const std::string& name) const;
 
-    AVLTree<int, Status>* getPersonalListPtr(const std::string& name);
-    AVLTree<int, bool>* getDerivedListPtr(const std::string& name);
+    AVLTree< int, Status >* getPersonalListPtr(const std::string& name);
+    AVLTree< int, bool >* getDerivedListPtr(const std::string& name);
 
-    void collectKeys(const std::string& name, Vector<int>& keys) const;
+    void collectKeys(const std::string& name, Vector< int >& keys) const;
 
   public:
     bool addBook(int id, const std::string& author, const std::string& title, int year);

@@ -19,35 +19,35 @@ bool velizade::LibraryManager::listExists(const std::string& name) const
   return isPersonal(name) || isDerived(name);
 }
 
-velizade::AVLTree<int, velizade::Status>* velizade::LibraryManager::getPersonalListPtr(const std::string& name)
+velizade::AVLTree< int, velizade::Status >* velizade::LibraryManager::getPersonalListPtr(const std::string& name)
 {
-  AVLTree<int, Status>* ptr = personalLists.findPtr(name);
+  AVLTree< int, Status >* ptr = personalLists.findPtr(name);
   if (!ptr)
   {
-    AVLTree<int, Status> empty;
+    AVLTree< int, Status > empty;
     personalLists.insert(name, empty);
     ptr = personalLists.findPtr(name);
   }
   return ptr;
 }
 
-velizade::AVLTree<int, bool>* velizade::LibraryManager::getDerivedListPtr(const std::string& name)
+velizade::AVLTree< int, bool >* velizade::LibraryManager::getDerivedListPtr(const std::string& name)
 {
-  AVLTree<int, bool>* ptr = derivedLists.findPtr(name);
+  AVLTree< int, bool >* ptr = derivedLists.findPtr(name);
   if (!ptr)
   {
-    AVLTree<int, bool> empty;
+    AVLTree< int, bool > empty;
     derivedLists.insert(name, empty);
     ptr = derivedLists.findPtr(name);
   }
   return ptr;
 }
 
-void velizade::LibraryManager::collectKeys(const std::string& name, Vector<int>& keys) const
+void velizade::LibraryManager::collectKeys(const std::string& name, Vector< int >& keys) const
 {
   if (isPersonal(name))
   {
-    const AVLTree<int, Status>* list = personalLists.findPtr(name);
+    const AVLTree< int, Status >* list = personalLists.findPtr(name);
     if (list)
     {
       for (auto it = list->begin(); it != list->end(); ++it)
@@ -58,7 +58,7 @@ void velizade::LibraryManager::collectKeys(const std::string& name, Vector<int>&
   }
   else if (isDerived(name))
   {
-    const AVLTree<int, bool>* list = derivedLists.findPtr(name);
+    const AVLTree< int, bool >* list = derivedLists.findPtr(name);
     if (list)
     {
       for (auto it = list->begin(); it != list->end(); ++it)
@@ -73,7 +73,7 @@ bool velizade::LibraryManager::listList(const std::string& listName, std::ostrea
 {
   if (isPersonal(listName))
   {
-    const AVLTree<int, Status>* list = personalLists.findPtr(listName);
+    const AVLTree< int, Status >* list = personalLists.findPtr(listName);
     if (!list)
     {
       return false;
@@ -97,7 +97,7 @@ bool velizade::LibraryManager::listList(const std::string& listName, std::ostrea
   }
   if (isDerived(listName))
   {
-    const AVLTree<int, bool>* list = derivedLists.findPtr(listName);
+    const AVLTree< int, bool >* list = derivedLists.findPtr(listName);
     if (!list)
     {
       return false;
@@ -142,7 +142,7 @@ bool velizade::LibraryManager::addBookToList(const std::string& listName, int bo
   {
     return false;
   }
-  AVLTree<int, Status>* list = getPersonalListPtr(listName);
+  AVLTree< int, Status >* list = getPersonalListPtr(listName);
   if (list->find(bookId))
   {
     return false;
@@ -155,7 +155,7 @@ bool velizade::LibraryManager::removeFromList(const std::string& listName, int b
 {
   if (isPersonal(listName))
   {
-    AVLTree<int, Status>* list = getPersonalListPtr(listName);
+    AVLTree< int, Status >* list = getPersonalListPtr(listName);
     if (!list->find(bookId))
     {
       return false;
@@ -165,7 +165,7 @@ bool velizade::LibraryManager::removeFromList(const std::string& listName, int b
   }
   if (isDerived(listName))
   {
-    AVLTree<int, bool>* list = getDerivedListPtr(listName);
+    AVLTree< int, bool >* list = getDerivedListPtr(listName);
     if (!list->find(bookId))
     {
       return false;
@@ -182,7 +182,7 @@ bool velizade::LibraryManager::setStatus(const std::string& listName, int bookId
   {
     return false;
   }
-  AVLTree<int, Status>* list = getPersonalListPtr(listName);
+  AVLTree< int, Status >* list = getPersonalListPtr(listName);
   if (!list->find(bookId))
   {
     return false;
@@ -204,7 +204,7 @@ bool velizade::LibraryManager::filterByStatus(const std::string& newList, const 
     return false;
   }
   Status s = stringToStatus(statusStr);
-  const AVLTree<int, Status>* src = personalLists.findPtr(sourceList);
+  const AVLTree< int, Status >* src = personalLists.findPtr(sourceList);
   if (!src)
   {
     return false;
@@ -230,7 +230,7 @@ bool velizade::LibraryManager::filterNotStatus(const std::string& newList, const
     return false;
   }
   Status s = stringToStatus(statusStr);
-  const AVLTree<int, Status>* src = personalLists.findPtr(sourceList);
+  const AVLTree< int, Status >* src = personalLists.findPtr(sourceList);
   if (!src)
   {
     return false;
@@ -255,13 +255,13 @@ bool velizade::LibraryManager::mergeLists(const std::string& newList, const std:
   {
     return false;
   }
-  Vector<int> keys;
+  Vector< int > keys;
   collectKeys(l1, keys);
   collectKeys(l2, keys);
   std::sort(keys.begin(), keys.end());
   keys.erase(std::unique(keys.begin(), keys.end()), keys.end());
 
-  AVLTree<int, bool> newTree;
+  AVLTree< int, bool > newTree;
   for (auto it = keys.begin(); it != keys.end(); ++it)
   {
     if (!newTree.insert(*it, true).second)
@@ -283,13 +283,13 @@ bool velizade::LibraryManager::intersectLists(const std::string& newList, const 
   {
     return false;
   }
-  Vector<int> keys1, keys2;
+  Vector< int > keys1, keys2;
   collectKeys(l1, keys1);
   collectKeys(l2, keys2);
   std::sort(keys1.begin(), keys1.end());
   std::sort(keys2.begin(), keys2.end());
 
-  Vector<int> common;
+  Vector< int > common;
   size_t i = 0, j = 0;
   while (i < keys1.getSize() && j < keys2.getSize())
   {
@@ -309,7 +309,7 @@ bool velizade::LibraryManager::intersectLists(const std::string& newList, const 
     }
   }
 
-  AVLTree<int, bool> newTree;
+  AVLTree< int, bool > newTree;
   for (auto it = common.begin(); it != common.end(); ++it)
   {
     if (!newTree.insert(*it, true).second)
@@ -331,13 +331,13 @@ bool velizade::LibraryManager::complementLists(const std::string& newList, const
   {
     return false;
   }
-  Vector<int> keys1, keys2;
+  Vector< int > keys1, keys2;
   collectKeys(l1, keys1);
   collectKeys(l2, keys2);
   std::sort(keys1.begin(), keys1.end());
   std::sort(keys2.begin(), keys2.end());
 
-  Vector<int> diff;
+  Vector< int > diff;
   size_t i = 0, j = 0;
   while (i < keys1.getSize())
   {
@@ -357,7 +357,7 @@ bool velizade::LibraryManager::complementLists(const std::string& newList, const
     }
   }
 
-  AVLTree<int, bool> newTree;
+  AVLTree< int, bool > newTree;
   for (auto it = diff.begin(); it != diff.end(); ++it)
   {
     if (!newTree.insert(*it, true).second)
@@ -377,7 +377,7 @@ bool velizade::LibraryManager::exportData(const std::string& filename) const
     return false;
   }
 
-  auto writeBooks = [&](const AVLTree<int, Book>& tree)
+  auto writeBooks = [&](const AVLTree< int, Book >& tree)
   {
     fout << "Books:\n";
     for (auto it = tree.begin(); it != tree.end(); ++it)
@@ -463,7 +463,7 @@ bool velizade::LibraryManager::importData(const std::string& filename)
       if (line.find("List ") == 0)
       {
         std::string name = line.substr(5);
-        AVLTree<int, Status> list;
+        AVLTree< int, Status > list;
         while (std::getline(fin, line) && !line.empty() && line.find("List ") != 0 && line != "Derived lists:")
         {
           size_t pos = line.find('|');
@@ -479,7 +479,7 @@ bool velizade::LibraryManager::importData(const std::string& filename)
       if (line.find("List ") == 0)
       {
         std::string name = line.substr(5);
-        AVLTree<int, bool> list;
+        AVLTree< int, bool > list;
         while (std::getline(fin, line) && !line.empty() && line.find("List ") != 0 && line != "Books:")
         {
           int id = std::stoi(line);

@@ -52,7 +52,7 @@ namespace velizade
     const_iterator end() const noexcept;
 
     iterator insert(iterator pos, const T& rhs);
-    template<class InputIt>
+    template< class InputIt >
     iterator insert(iterator pos, InputIt first, InputIt last);
     iterator erase(iterator pos);
     iterator erase(iterator first, iterator last);
@@ -62,13 +62,14 @@ namespace velizade
     size_t size_;
     size_t capacity_;
   };
+
 }
 
 template< class T >
-velizade::Vector< T >::Vector() :
-  data_(nullptr),
-  size_(0),
-  capacity_(0)
+velizade::Vector< T >::Vector():
+    data_(nullptr),
+    size_(0),
+    capacity_(0)
 {}
 
 template< class T >
@@ -78,15 +79,15 @@ velizade::Vector< T >::~Vector()
 }
 
 template< class T >
-velizade::Vector< T >::Vector(size_t size) :
-  data_(size ? new T[size] : nullptr),
-  size_(size),
-  capacity_(size)
+velizade::Vector< T >::Vector(size_t size):
+    data_(size ? new T[size] : nullptr),
+    size_(size),
+    capacity_(size)
 {}
 
 template< class T >
-velizade::Vector< T >::Vector(size_t size, const T& value) :
-  Vector(size)
+velizade::Vector< T >::Vector(size_t size, const T& value):
+    Vector(size)
 {
   for (size_t i = 0; i < size; ++i)
   {
@@ -95,8 +96,8 @@ velizade::Vector< T >::Vector(size_t size, const T& value) :
 }
 
 template< class T >
-velizade::Vector< T >::Vector(const Vector< T >& rhs) :
-  Vector(rhs.getSize())
+velizade::Vector< T >::Vector(const Vector< T >& rhs):
+    Vector(rhs.getSize())
 {
   for (size_t i = 0; i < rhs.getSize(); ++i)
   {
@@ -105,8 +106,8 @@ velizade::Vector< T >::Vector(const Vector< T >& rhs) :
 }
 
 template< class T >
-velizade::Vector< T >::Vector(Vector< T >&& rhs) noexcept :
-  Vector()
+velizade::Vector< T >::Vector(Vector< T >&& rhs) noexcept:
+    Vector()
 {
   swap(rhs);
 }

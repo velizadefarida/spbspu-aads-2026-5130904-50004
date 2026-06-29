@@ -8,7 +8,7 @@ BOOST_AUTO_TEST_SUITE(AVLTreeTest)
 
 BOOST_AUTO_TEST_CASE(InsertAndFind)
 {
-  AVLTree<int, std::string> tree;
+  AVLTree< int, std::string > tree;
   BOOST_CHECK(tree.insert(1, "one").second);
   BOOST_CHECK(tree.insert(2, "two").second);
   BOOST_CHECK(tree.insert(3, "three").second);
@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(InsertAndFind)
 
 BOOST_AUTO_TEST_CASE(Remove)
 {
-  AVLTree<int, std::string> tree;
+  AVLTree< int, std::string > tree;
   tree.insert(5, "five");
   tree.insert(3, "three");
   tree.insert(7, "seven");
@@ -39,14 +39,14 @@ BOOST_AUTO_TEST_CASE(Remove)
 
 BOOST_AUTO_TEST_CASE(IteratorOrder)
 {
-  AVLTree<int, std::string> tree;
+  AVLTree< int, std::string > tree;
   tree.insert(10, "ten");
   tree.insert(5, "five");
   tree.insert(15, "fifteen");
   tree.insert(3, "three");
   tree.insert(7, "seven");
 
-  std::vector<int> expected = {3, 5, 7, 10, 15};
+  std::vector< int > expected = {3, 5, 7, 10, 15};
   size_t index = 0;
   for (auto it = tree.begin(); it != tree.end(); ++it)
   {
@@ -58,13 +58,13 @@ BOOST_AUTO_TEST_CASE(IteratorOrder)
 
 BOOST_AUTO_TEST_CASE(CopyAndMove)
 {
-  AVLTree<int, int> tree;
+  AVLTree< int, int > tree;
   for (int i = 0; i < 10; ++i)
   {
     tree.insert(i, i * 2);
   }
 
-  AVLTree<int, int> copy = tree;
+  AVLTree< int, int > copy = tree;
   size_t count = 0;
   for (auto it = copy.begin(); it != copy.end(); ++it)
   {
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(CopyAndMove)
   BOOST_CHECK(copy.find(5, val));
   BOOST_CHECK_EQUAL(val, 10);
 
-  AVLTree<int, int> moved = std::move(tree);
+  AVLTree< int, int > moved = std::move(tree);
   count = 0;
   for (auto it = moved.begin(); it != moved.end(); ++it)
   {
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(CopyAndMove)
 
 BOOST_AUTO_TEST_CASE(StringKeys)
 {
-  AVLTree<std::string, int> tree;
+  AVLTree< std::string, int > tree;
   tree.insert("apple", 10);
   tree.insert("banana", 20);
   tree.insert("cherry", 30);
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(StringKeys)
   BOOST_CHECK_EQUAL(val, 20);
   BOOST_CHECK(!tree.find("grape"));
 
-  std::vector<std::string> expected = {"apple", "banana", "cherry"};
+  std::vector< std::string > expected = {"apple", "banana", "cherry"};
   size_t index = 0;
   for (auto it = tree.begin(); it != tree.end(); ++it)
   {
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(StringKeys)
 
 BOOST_AUTO_TEST_CASE(ComplexOperations)
 {
-  AVLTree<int, int> tree;
+  AVLTree< int, int > tree;
   const int N = 100;
   for (int i = 0; i < N; ++i)
   {
