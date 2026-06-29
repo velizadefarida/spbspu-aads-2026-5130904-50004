@@ -19,7 +19,7 @@ bool velizade::LibraryManager::listExists(const std::string& name) const
   return isPersonal(name) || isDerived(name);
 }
 
-velizade::AVLTree<int, velizade::Status>* velizade::LibraryManager::getPersonalListPtr(const std::string& name)
+AVLTree<int, velizade::Status>* velizade::LibraryManager::getPersonalListPtr(const std::string& name)
 {
   AVLTree<int, Status>* ptr = personalLists.findPtr(name);
   if (!ptr)
@@ -31,7 +31,7 @@ velizade::AVLTree<int, velizade::Status>* velizade::LibraryManager::getPersonalL
   return ptr;
 }
 
-velizade::AVLTree<int, bool>* velizade::LibraryManager::getDerivedListPtr(const std::string& name)
+AVLTree<int, bool>* velizade::LibraryManager::getDerivedListPtr(const std::string& name)
 {
   AVLTree<int, bool>* ptr = derivedLists.findPtr(name);
   if (!ptr)
@@ -52,7 +52,7 @@ void velizade::LibraryManager::collectKeys(const std::string& name, Vector<int>&
     {
       for (auto it = list->begin(); it != list->end(); ++it)
       {
-        keys.pushBack(it->first);
+        keys.pushBack((*it).first);
       }
     }
   }
@@ -63,7 +63,7 @@ void velizade::LibraryManager::collectKeys(const std::string& name, Vector<int>&
     {
       for (auto it = list->begin(); it != list->end(); ++it)
       {
-        keys.pushBack(it->first);
+        keys.pushBack((*it).first);
       }
     }
   }
@@ -83,8 +83,8 @@ bool velizade::LibraryManager::listList(const std::string& listName, std::ostrea
     for (auto it = list->begin(); it != list->end(); ++it)
     {
       ++count;
-      int id = it->first;
-      Status status = it->second;
+      int id = (*it).first;
+      Status status = (*it).second;
       Book book;
       if (globalCatalog.find(id, book))
       {
@@ -107,7 +107,7 @@ bool velizade::LibraryManager::listList(const std::string& listName, std::ostrea
     for (auto it = list->begin(); it != list->end(); ++it)
     {
       ++count;
-      int id = it->first;
+      int id = (*it).first;
       Book book;
       if (globalCatalog.find(id, book))
       {
@@ -211,9 +211,9 @@ bool velizade::LibraryManager::filterByStatus(const std::string& newList, const 
   }
   for (auto it = src->begin(); it != src->end(); ++it)
   {
-    if (it->second == s)
+    if ((*it).second == s)
     {
-      getDerivedListPtr(newList)->insert(it->first, true);
+      getDerivedListPtr(newList)->insert((*it).first, true);
     }
   }
   return true;
@@ -237,9 +237,9 @@ bool velizade::LibraryManager::filterNotStatus(const std::string& newList, const
   }
   for (auto it = src->begin(); it != src->end(); ++it)
   {
-    if (it->second != s)
+    if ((*it).second != s)
     {
-      getDerivedListPtr(newList)->insert(it->first, true);
+      getDerivedListPtr(newList)->insert((*it).first, true);
     }
   }
   return true;
@@ -382,8 +382,8 @@ bool velizade::LibraryManager::exportData(const std::string& filename) const
     fout << "Books:\n";
     for (auto it = tree.begin(); it != tree.end(); ++it)
     {
-      fout << it->first << "|" << it->second.author << "|"
-           << it->second.title << "|" << it->second.year << "\n";
+      fout << (*it).first << "|" << (*it).second.author << "|"
+           << (*it).second.title << "|" << (*it).second.year << "\n";
     }
   };
   writeBooks(globalCatalog);
@@ -391,20 +391,20 @@ bool velizade::LibraryManager::exportData(const std::string& filename) const
   fout << "Personal lists:\n";
   for (auto it = personalLists.begin(); it != personalLists.end(); ++it)
   {
-    fout << "List " << it->first << "\n";
-    for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2)
+    fout << "List " << (*it).first << "\n";
+    for (auto it2 = (*it).second.begin(); it2 != (*it).second.end(); ++it2)
     {
-      fout << it2->first << "|" << statusToString(it2->second) << "\n";
+      fout << (*it2).first << "|" << statusToString((*it2).second) << "\n";
     }
   }
 
   fout << "Derived lists:\n";
   for (auto it = derivedLists.begin(); it != derivedLists.end(); ++it)
   {
-    fout << "List " << it->first << "\n";
-    for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2)
+    fout << "List " << (*it).first << "\n";
+    for (auto it2 = (*it).second.begin(); it2 != (*it).second.end(); ++it2)
     {
-      fout << it2->first << "\n";
+      fout << (*it2).first << "\n";
     }
   }
 

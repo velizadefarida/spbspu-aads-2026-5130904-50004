@@ -55,7 +55,6 @@ namespace velizade
       bool operator!=(const Iterator& other) const;
       bool operator==(const Iterator& other) const;
       std::pair<const K, T&> operator*() const;
-      std::pair<const K, T&>* operator->();
       K& key();
       T& value();
     };
@@ -73,7 +72,6 @@ namespace velizade
       bool operator!=(const ConstIterator& other) const;
       bool operator==(const ConstIterator& other) const;
       std::pair<const K, const T&> operator*() const;
-      const std::pair<const K, const T&>* operator->() const;
     };
 
     using iterator = Iterator;
@@ -406,12 +404,6 @@ std::pair<const K, T&> velizade::AVLTree<K, T>::Iterator::operator*() const
 }
 
 template <typename K, typename T>
-std::pair<const K, T&>* velizade::AVLTree<K, T>::Iterator::operator->()
-{
-  return &(operator*());
-}
-
-template <typename K, typename T>
 K& velizade::AVLTree<K, T>::Iterator::key()
 {
   return current->key;
@@ -495,12 +487,6 @@ template <typename K, typename T>
 std::pair<const K, const T&> velizade::AVLTree<K, T>::ConstIterator::operator*() const
 {
   return std::pair<const K, const T&>(current->key, current->value);
-}
-
-template <typename K, typename T>
-const std::pair<const K, const T&>* velizade::AVLTree<K, T>::ConstIterator::operator->() const
-{
-  return &(operator*());
 }
 
 template <typename K, typename T>
