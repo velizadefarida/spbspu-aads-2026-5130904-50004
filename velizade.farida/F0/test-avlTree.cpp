@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(IteratorOrder)
   size_t index = 0;
   for (auto it = tree.begin(); it != tree.end(); ++it)
   {
-    BOOST_CHECK_EQUAL(it->first, expected[index]);
+    BOOST_CHECK_EQUAL((*it).first, expected[index]);
     ++index;
   }
   BOOST_CHECK_EQUAL(index, expected.size());
@@ -65,16 +65,32 @@ BOOST_AUTO_TEST_CASE(CopyAndMove)
   }
 
   AVLTree<int, int> copy = tree;
-  BOOST_CHECK_EQUAL(std::distance(copy.begin(), copy.end()), 10);
+  size_t count = 0;
+  for (auto it = copy.begin(); it != copy.end(); ++it)
+  {
+    ++count;
+  }
+  BOOST_CHECK_EQUAL(count, 10);
   int val;
   BOOST_CHECK(copy.find(5, val));
   BOOST_CHECK_EQUAL(val, 10);
 
   AVLTree<int, int> moved = std::move(tree);
-  BOOST_CHECK_EQUAL(std::distance(moved.begin(), moved.end()), 10);
+  count = 0;
+  for (auto it = moved.begin(); it != moved.end(); ++it)
+  {
+    ++count;
+  }
+  BOOST_CHECK_EQUAL(count, 10);
   BOOST_CHECK(moved.find(3, val));
   BOOST_CHECK_EQUAL(val, 6);
-  BOOST_CHECK_EQUAL(std::distance(tree.begin(), tree.end()), 0);
+
+  count = 0;
+  for (auto it = tree.begin(); it != tree.end(); ++it)
+  {
+    ++count;
+  }
+  BOOST_CHECK_EQUAL(count, 0);
 }
 
 BOOST_AUTO_TEST_CASE(StringKeys)
@@ -92,7 +108,7 @@ BOOST_AUTO_TEST_CASE(StringKeys)
   size_t index = 0;
   for (auto it = tree.begin(); it != tree.end(); ++it)
   {
-    BOOST_CHECK_EQUAL(it->first, expected[index]);
+    BOOST_CHECK_EQUAL((*it).first, expected[index]);
     ++index;
   }
 }
@@ -105,7 +121,12 @@ BOOST_AUTO_TEST_CASE(ComplexOperations)
   {
     tree.insert(i, i);
   }
-  BOOST_CHECK_EQUAL(std::distance(tree.begin(), tree.end()), N);
+  size_t count = 0;
+  for (auto it = tree.begin(); it != tree.end(); ++it)
+  {
+    ++count;
+  }
+  BOOST_CHECK_EQUAL(count, N);
 
   for (int i = 0; i < N; ++i)
   {
@@ -114,7 +135,12 @@ BOOST_AUTO_TEST_CASE(ComplexOperations)
       tree.remove(i);
     }
   }
-  BOOST_CHECK_EQUAL(std::distance(tree.begin(), tree.end()), N / 2);
+  count = 0;
+  for (auto it = tree.begin(); it != tree.end(); ++it)
+  {
+    ++count;
+  }
+  BOOST_CHECK_EQUAL(count, N / 2);
 
   for (int i = 0; i < N; ++i)
   {

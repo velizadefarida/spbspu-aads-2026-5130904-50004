@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE(InsertSingle)
   Vector<int> v;
   v.pushBack(1);
   v.pushBack(3);
-  v.insert(1, 2);
+  v.insert(static_cast<size_t>(1), 2);
   BOOST_CHECK_EQUAL(v.getSize(), 3);
   BOOST_CHECK_EQUAL(v[0], 1);
   BOOST_CHECK_EQUAL(v[1], 2);
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(InsertAtBeginning)
   Vector<int> v;
   v.pushBack(2);
   v.pushBack(3);
-  v.insert(0, 1);
+  v.insert(static_cast<size_t>(0), 1);
   BOOST_CHECK_EQUAL(v.getSize(), 3);
   BOOST_CHECK_EQUAL(v[0], 1);
   BOOST_CHECK_EQUAL(v[1], 2);
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE(InsertAtEnd)
   Vector<int> v;
   v.pushBack(1);
   v.pushBack(2);
-  v.insert(v.getSize(), 3);
+  v.insert(static_cast<size_t>(v.getSize()), 3);
   BOOST_CHECK_EQUAL(v.getSize(), 3);
   BOOST_CHECK_EQUAL(v[0], 1);
   BOOST_CHECK_EQUAL(v[1], 2);
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(InsertOutOfRange)
 {
   Vector<int> v;
   v.pushBack(1);
-  BOOST_CHECK_THROW(v.insert(2, 10), std::out_of_range);
+  BOOST_CHECK_THROW(v.insert(static_cast<size_t>(2), 10), std::out_of_range);
 }
 
 BOOST_AUTO_TEST_CASE(EraseSingle)
@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE(EraseSingle)
   v.pushBack(1);
   v.pushBack(2);
   v.pushBack(3);
-  v.erase(1);
+  v.erase(static_cast<size_t>(1));
   BOOST_CHECK_EQUAL(v.getSize(), 2);
   BOOST_CHECK_EQUAL(v[0], 1);
   BOOST_CHECK_EQUAL(v[1], 3);
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE(EraseOutOfRange)
 {
   Vector<int> v;
   v.pushBack(1);
-  BOOST_CHECK_THROW(v.erase(1), std::out_of_range);
+  BOOST_CHECK_THROW(v.erase(static_cast<size_t>(1)), std::out_of_range);
 }
 
 BOOST_AUTO_TEST_CASE(PopBack)
