@@ -2,6 +2,7 @@
 #include <fstream>
 #include <algorithm>
 #include <cstddef>
+#include <stdexcept>
 
 bool velizade::LibraryManager::isPersonal(const std::string& name) const
 {
@@ -42,10 +43,87 @@ velizade::AVLTree<int, bool>* velizade::LibraryManager::getDerivedListPtr(const 
   return ptr;
 }
 
+void velizade::LibraryManager::collectKeys(const std::string& name, Vector<int>& keys) const
+{
+  if (isPersonal(name))
+  {
+    const AVLTree<int, Status>* list = personalLists.findPtr(name);
+    if (list)
+    {
+      for (auto it = list->begin(); it != list->end(); ++it)
+      {
+        keys.pushBack(it->first);
+      }
+    }
+  }
+  else if (isDerived(name))
+  {
+    const AVLTree<int, bool>* list = derivedLists.findPtr(name);
+    if (list)
+    {
+      for (auto it = list->begin(); it != list->end(); ++it)
+      {
+        keys.pushBack(it->first);
+      }
+    }
+  }
+}
+
+bool velizade::LibraryManager::listList(const std::string& listName, std::ostream& out) const
+{
+  if (isPersonal(listName))
+  {
+    const AVLTree<int, Status>* list = personalLists.findPtr(listName);
+    if (!list)
+    {
+      return false;
+    }
+    out << "List " << listName << " (";
+    size_t count = 0;
+    for (auto it = list->begin(); it != list->end(); ++it)
+    {
+      ++count;
+      int id = it->first;
+      Status status = it->second;
+      Book book;
+      if (globalCatalog.find(id, book))
+      {
+        out << id << " " << book.author << " " << book.title << " " << book.year
+            << " Status: " << statusToString(status) << "\n";
+      }
+    }
+    out << count << " books)\n";
+    return true;
+  }
+  if (isDerived(listName))
+  {
+    const AVLTree<int, bool>* list = derivedLists.findPtr(listName);
+    if (!list)
+    {
+      return false;
+    }
+    out << "List " << listName << " (";
+    size_t count = 0;
+    for (auto it = list->begin(); it != list->end(); ++it)
+    {
+      ++count;
+      int id = it->first;
+      Book book;
+      if (globalCatalog.find(id, book))
+      {
+        out << id << " " << book.author << " " << book.title << " " << book.year << "\n";
+      }
+    }
+    out << count << " books)\n";
+    return true;
+  }
+  return false;
+}
+
 bool velizade::LibraryManager::addBook(int id, const std::string& author, const std::string& title, int year)
 {
   Book b{author, title, year};
-  return globalCatalog.insert(id, b);
+  return globalCatalog.insert(id, b).second;
 }
 
 bool velizade::LibraryManager::showBook(int id, Book& book) const
@@ -115,52 +193,6 @@ bool velizade::LibraryManager::setStatus(const std::string& listName, int bookId
   return true;
 }
 
-bool velizade::LibraryManager::listList(const std::string& listName, Vector<std::string>& output) const
-{
-  if (isPersonal(listName))
-  {
-    const AVLTree<int, Status>* list = personalLists.findPtr(listName);
-    if (!list)
-    {
-      return false;
-    }
-    auto entries = list->getAll();
-    output.push_back("List " + listName + " (" + std::to_string(entries.getSize()) + " books):");
-    for (size_t i = 0; i < entries.getSize(); ++i)
-    {
-      const auto& p = entries[i];
-      Book book;
-      if (globalCatalog.find(p.first, book))
-      {
-        output.push_back(std::to_string(p.first) + " " + book.author + " " + book.title + " " + std::to_string(book.year)
-                                                 + " Status: " + statusToString(p.second));
-      }
-    }
-    return true;
-  }
-  if (isDerived(listName))
-  {
-    const AVLTree<int, bool>* list = derivedLists.findPtr(listName);
-    if (!list)
-    {
-      return false;
-    }
-    auto entries = list->getAll();
-    output.push_back("List " + listName + " (" + std::to_string(entries.getSize()) + " books):");
-    for (size_t i = 0; i < entries.getSize(); ++i)
-    {
-      const auto& p = entries[i];
-      Book book;
-      if (globalCatalog.find(p.first, book))
-      {
-        output.push_back(std::to_string(p.first) + " " + book.author + " " + book.title + " " + std::to_string(book.year));
-      }
-    }
-    return true;
-  }
-  return false;
-}
-
 bool velizade::LibraryManager::filterByStatus(const std::string& newList, const std::string& sourceList, const std::string& statusStr)
 {
   if (!isPersonal(sourceList))
@@ -172,14 +204,16 @@ bool velizade::LibraryManager::filterByStatus(const std::string& newList, const 
     return false;
   }
   Status s = stringToStatus(statusStr);
-  AVLTree<int, Status>* src = getPersonalListPtr(sourceList);
-  auto entries = src->getAll();
-  for (size_t i = 0; i < entries.getSize(); ++i)
+  const AVLTree<int, Status>* src = personalLists.findPtr(sourceList);
+  if (!src)
   {
-    const auto& p = entries[i];
-    if (p.second == s)
+    return false;
+  }
+  for (auto it = src->begin(); it != src->end(); ++it)
+  {
+    if (it->second == s)
     {
-      getDerivedListPtr(newList)->insert(p.first, true);
+      getDerivedListPtr(newList)->insert(it->first, true);
     }
   }
   return true;
@@ -196,14 +230,16 @@ bool velizade::LibraryManager::filterNotStatus(const std::string& newList, const
     return false;
   }
   Status s = stringToStatus(statusStr);
-  AVLTree<int, Status>* src = getPersonalListPtr(sourceList);
-  auto entries = src->getAll();
-  for (size_t i = 0; i < entries.getSize(); ++i)
+  const AVLTree<int, Status>* src = personalLists.findPtr(sourceList);
+  if (!src)
   {
-    const auto& p = entries[i];
-    if (p.second != s)
+    return false;
+  }
+  for (auto it = src->begin(); it != src->end(); ++it)
+  {
+    if (it->second != s)
     {
-      getDerivedListPtr(newList)->insert(p.first, true);
+      getDerivedListPtr(newList)->insert(it->first, true);
     }
   }
   return true;
@@ -220,61 +256,20 @@ bool velizade::LibraryManager::mergeLists(const std::string& newList, const std:
     return false;
   }
   Vector<int> keys;
-  auto addKeys = [&](const std::string& name)
+  collectKeys(l1, keys);
+  collectKeys(l2, keys);
+  std::sort(keys.begin(), keys.end());
+  keys.erase(std::unique(keys.begin(), keys.end()), keys.end());
+
+  AVLTree<int, bool> newTree;
+  for (auto it = keys.begin(); it != keys.end(); ++it)
   {
-    if (isPersonal(name))
+    if (!newTree.insert(*it, true).second)
     {
-      auto entries = getPersonalListPtr(name)->getAll();
-      for (size_t i = 0; i < entries.getSize(); ++i)
-      {
-        keys.push_back(entries[i].first);
-      }
-    }
-    else
-    {
-      auto entries = getDerivedListPtr(name)->getAll();
-      for (size_t i = 0; i < entries.getSize(); ++i)
-      {
-        keys.push_back(entries[i].first);
-      }
-    }
-  };
-  addKeys(l1);
-  addKeys(l2);
-  for (size_t i = 0; i < keys.getSize(); ++i)
-  {
-    for (size_t j = i + 1; j < keys.getSize(); ++j)
-    {
-      if (keys[i] > keys[j])
-      {
-        int tmp = keys[i];
-        keys[i] = keys[j];
-        keys[j] = tmp;
-      }
+      throw std::runtime_error("Failed to insert into new tree");
     }
   }
-  if (keys.getSize() > 0)
-  {
-    size_t write = 1;
-    for (size_t read = 1; read < keys.getSize(); ++read)
-    {
-      if (keys[read] != keys[write - 1])
-      {
-        keys[write++] = keys[read];
-      }
-    }
-    Vector<int> unique;
-    for (size_t i = 0; i < write; ++i)
-    {
-      unique.push_back(keys[i]);
-    }
-    keys = unique;
-  }
-  AVLTree<int, bool>* newListTree = getDerivedListPtr(newList);
-  for (size_t i = 0; i < keys.getSize(); ++i)
-  {
-    newListTree->insert(keys[i], true);
-  }
+  derivedLists.insert(newList, std::move(newTree));
   return true;
 }
 
@@ -288,40 +283,41 @@ bool velizade::LibraryManager::intersectLists(const std::string& newList, const 
   {
     return false;
   }
-  Vector<int> keys1;
-  if (isPersonal(l1))
+  Vector<int> keys1, keys2;
+  collectKeys(l1, keys1);
+  collectKeys(l2, keys2);
+  std::sort(keys1.begin(), keys1.end());
+  std::sort(keys2.begin(), keys2.end());
+
+  Vector<int> common;
+  size_t i = 0, j = 0;
+  while (i < keys1.getSize() && j < keys2.getSize())
   {
-    auto entries = getPersonalListPtr(l1)->getAll();
-    for (size_t i = 0; i < entries.getSize(); ++i)
+    if (keys1[i] < keys2[j])
     {
-      keys1.push_back(entries[i].first);
+      ++i;
     }
-  }
-  else
-  {
-    auto entries = getDerivedListPtr(l1)->getAll();
-    for (size_t i = 0; i < entries.getSize(); ++i)
+    else if (keys1[i] > keys2[j])
     {
-      keys1.push_back(entries[i].first);
-    }
-  }
-  for (size_t i = 0; i < keys1.getSize(); ++i)
-  {
-    int id = keys1[i];
-    bool found = false;
-    if (isPersonal(l2))
-    {
-      found = getPersonalListPtr(l2)->find(id);
+      ++j;
     }
     else
     {
-      found = getDerivedListPtr(l2)->find(id);
-    }
-    if (found)
-    {
-      getDerivedListPtr(newList)->insert(id, true);
+      common.pushBack(keys1[i]);
+      ++i;
+      ++j;
     }
   }
+
+  AVLTree<int, bool> newTree;
+  for (auto it = common.begin(); it != common.end(); ++it)
+  {
+    if (!newTree.insert(*it, true).second)
+    {
+      throw std::runtime_error("Failed to insert into new tree");
+    }
+  }
+  derivedLists.insert(newList, std::move(newTree));
   return true;
 }
 
@@ -335,40 +331,41 @@ bool velizade::LibraryManager::complementLists(const std::string& newList, const
   {
     return false;
   }
-  Vector<int> keys1;
-  if (isPersonal(l1))
+  Vector<int> keys1, keys2;
+  collectKeys(l1, keys1);
+  collectKeys(l2, keys2);
+  std::sort(keys1.begin(), keys1.end());
+  std::sort(keys2.begin(), keys2.end());
+
+  Vector<int> diff;
+  size_t i = 0, j = 0;
+  while (i < keys1.getSize())
   {
-    auto entries = getPersonalListPtr(l1)->getAll();
-    for (size_t i = 0; i < entries.getSize(); ++i)
+    if (j < keys2.getSize() && keys1[i] > keys2[j])
     {
-      keys1.push_back(entries[i].first);
+      ++j;
     }
-  }
-  else
-  {
-    auto entries = getDerivedListPtr(l1)->getAll();
-    for (size_t i = 0; i < entries.getSize(); ++i)
+    else if (j < keys2.getSize() && keys1[i] == keys2[j])
     {
-      keys1.push_back(entries[i].first);
-    }
-  }
-  for (size_t i = 0; i < keys1.getSize(); ++i)
-  {
-    int id = keys1[i];
-    bool found = false;
-    if (isPersonal(l2))
-    {
-      found = getPersonalListPtr(l2)->find(id);
+      ++i;
+      ++j;
     }
     else
     {
-      found = getDerivedListPtr(l2)->find(id);
-    }
-    if (!found)
-    {
-      getDerivedListPtr(newList)->insert(id, true);
+      diff.pushBack(keys1[i]);
+      ++i;
     }
   }
+
+  AVLTree<int, bool> newTree;
+  for (auto it = diff.begin(); it != diff.end(); ++it)
+  {
+    if (!newTree.insert(*it, true).second)
+    {
+      throw std::runtime_error("Failed to insert into new tree");
+    }
+  }
+  derivedLists.insert(newList, std::move(newTree));
   return true;
 }
 
@@ -379,44 +376,38 @@ bool velizade::LibraryManager::exportData(const std::string& filename) const
   {
     return false;
   }
-  auto books = globalCatalog.getAll();
-  fout << books.getSize() << "\n";
-  for (size_t i = 0; i < books.getSize(); ++i)
-  {
-    const auto& p = books[i];
-    fout << p.first << "|" << p.second.author << "|" << p.second.title << "|" << p.second.year << "\n";
-  }
 
-  auto personalNames = personalLists.getAll();
-  fout << personalNames.getSize() << "\n";
-  for (size_t i = 0; i < personalNames.getSize(); ++i)
+  auto writeBooks = [&](const AVLTree<int, Book>& tree)
   {
-    const auto& nameEntry = personalNames[i];
-    const std::string& name = nameEntry.first;
-    const AVLTree<int, Status>& list = nameEntry.second;
-    auto entries = list.getAll();
-    fout << name << "|" << entries.getSize() << "\n";
-    for (size_t j = 0; j < entries.getSize(); ++j)
+    fout << "Books:\n";
+    for (auto it = tree.begin(); it != tree.end(); ++it)
     {
-      const auto& e = entries[j];
-      fout << e.first << "|" << statusToString(e.second) << "\n";
+      fout << it->first << "|" << it->second.author << "|"
+           << it->second.title << "|" << it->second.year << "\n";
+    }
+  };
+  writeBooks(globalCatalog);
+
+  fout << "Personal lists:\n";
+  for (auto it = personalLists.begin(); it != personalLists.end(); ++it)
+  {
+    fout << "List " << it->first << "\n";
+    for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2)
+    {
+      fout << it2->first << "|" << statusToString(it2->second) << "\n";
     }
   }
 
-  auto derivedNames = derivedLists.getAll();
-  fout << derivedNames.getSize() << "\n";
-  for (size_t i = 0; i < derivedNames.getSize(); ++i)
+  fout << "Derived lists:\n";
+  for (auto it = derivedLists.begin(); it != derivedLists.end(); ++it)
   {
-    const auto& nameEntry = derivedNames[i];
-    const std::string& name = nameEntry.first;
-    const AVLTree<int, bool>& list = nameEntry.second;
-    auto entries = list.getAll();
-    fout << name << "|" << entries.getSize() << "\n";
-    for (size_t j = 0; j < entries.getSize(); ++j)
+    fout << "List " << it->first << "\n";
+    for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2)
     {
-      fout << entries[j].first << "\n";
+      fout << it2->first << "\n";
     }
   }
+
   fout.close();
   return true;
 }
@@ -428,66 +419,75 @@ bool velizade::LibraryManager::importData(const std::string& filename)
   {
     return false;
   }
+
   globalCatalog.clear();
   personalLists.clear();
   derivedLists.clear();
 
-  size_t cnt;
-  fin >> cnt; fin.ignore();
-  for (size_t i = 0; i < cnt; ++i)
+  std::string line;
+  std::string section;
+  while (std::getline(fin, line))
   {
-    std::string line;
-    std::getline(fin, line);
-    size_t pos = 0;
-    std::string parts[4];
-    for (int j = 0; j < 4; ++j)
+    if (line.empty())
     {
-      size_t next = line.find('|', pos);
-      parts[j] = line.substr(pos, next - pos);
-      pos = next + 1;
+      continue;
     }
-    int id = std::stoi(parts[0]);
-    int year = std::stoi(parts[3]);
-    globalCatalog.insert(id, {parts[1], parts[2], year});
-  }
-
-  fin >> cnt; fin.ignore();
-  for (size_t i = 0; i < cnt; ++i)
-  {
-    std::string line;
-    std::getline(fin, line);
-    size_t pos = line.find('|');
-    std::string name = line.substr(0, pos);
-    size_t entries = std::stoul(line.substr(pos + 1));
-    AVLTree<int, Status> list;
-    for (size_t j = 0; j < entries; ++j)
+    if (line == "Books:")
     {
-      std::getline(fin, line);
-      pos = line.find('|');
-      int id = std::stoi(line.substr(0, pos));
-      std::string statusStr = line.substr(pos + 1);
-      Status s = stringToStatus(statusStr);
-      list.insert(id, s);
+      section = "books";
+      continue;
     }
-    personalLists.insert(name, list);
-  }
-
-  fin >> cnt; fin.ignore();
-  for (size_t i = 0; i < cnt; ++i)
-  {
-    std::string line;
-    std::getline(fin, line);
-    size_t pos = line.find('|');
-    std::string name = line.substr(0, pos);
-    size_t entries = std::stoul(line.substr(pos + 1));
-    AVLTree<int, bool> list;
-    for (size_t j = 0; j < entries; ++j)
+    else if (line == "Personal lists:")
     {
-      std::getline(fin, line);
-      int id = std::stoi(line);
-      list.insert(id, true);
+      section = "personal";
+      continue;
     }
-    derivedLists.insert(name, list);
+    else if (line == "Derived lists:")
+    {
+      section = "derived";
+      continue;
+    }
+    if (section == "books")
+    {
+      size_t pos1 = line.find('|');
+      size_t pos2 = line.find('|', pos1 + 1);
+      size_t pos3 = line.find('|', pos2 + 1);
+      int id = std::stoi(line.substr(0, pos1));
+      std::string author = line.substr(pos1 + 1, pos2 - pos1 - 1);
+      std::string title = line.substr(pos2 + 1, pos3 - pos2 - 1);
+      int year = std::stoi(line.substr(pos3 + 1));
+      globalCatalog.insert(id, Book{author, title, year});
+    }
+    else if (section == "personal")
+    {
+      if (line.find("List ") == 0)
+      {
+        std::string name = line.substr(5);
+        AVLTree<int, Status> list;
+        while (std::getline(fin, line) && !line.empty() && line.find("List ") != 0 && line != "Derived lists:")
+        {
+          size_t pos = line.find('|');
+          int id = std::stoi(line.substr(0, pos));
+          Status s = stringToStatus(line.substr(pos + 1));
+          list.insert(id, s);
+        }
+        personalLists.insert(name, std::move(list));
+      }
+    }
+    else if (section == "derived")
+    {
+      if (line.find("List ") == 0)
+      {
+        std::string name = line.substr(5);
+        AVLTree<int, bool> list;
+        while (std::getline(fin, line) && !line.empty() && line.find("List ") != 0 && line != "Books:")
+        {
+          int id = std::stoi(line);
+          list.insert(id, true);
+        }
+        derivedLists.insert(name, std::move(list));
+      }
+    }
   }
   fin.close();
   return true;

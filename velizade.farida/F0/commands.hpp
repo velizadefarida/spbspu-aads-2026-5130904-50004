@@ -34,6 +34,7 @@ namespace velizade
     void cmdExport(std::istream& in, std::ostream& out);
     void cmdImport(std::istream& in, std::ostream& out);
 
+    void reportError(std::ostream& out, const std::string& msg);
     bool isNumberValid(const std::string& str) const;
   };
 }

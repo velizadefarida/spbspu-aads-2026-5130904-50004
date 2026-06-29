@@ -56,9 +56,14 @@ void velizade::CommandDispatcher::execute(std::istream& in, std::ostream& out)
     }
     else
     {
-      out << "<INVALID COMMAND> Unknown command\n";
+      reportError(out, "Unknown command");
     }
   }
+}
+
+void velizade::CommandDispatcher::reportError(std::ostream& out, const std::string& msg)
+{
+  out << "<INVALID COMMAND> " << msg << "\n";
 }
 
 bool velizade::CommandDispatcher::isNumberValid(const std::string& str) const
@@ -83,12 +88,12 @@ void velizade::CommandDispatcher::cmdAdd(std::istream& in, std::ostream& out)
   in >> idStr >> author >> title >> yearStr;
   if (!in)
   {
-    out << "<INVALID COMMAND> Wrong number of arguments for add\n";
+    reportError(out, "Wrong number of arguments for add");
     return;
   }
   if (!isNumberValid(idStr) || !isNumberValid(yearStr))
   {
-    out << "<INVALID COMMAND> ID and year must be numbers\n";
+    reportError(out, "ID and year must be numbers");
     return;
   }
   int id = std::stoi(idStr);
@@ -99,7 +104,7 @@ void velizade::CommandDispatcher::cmdAdd(std::istream& in, std::ostream& out)
   }
   else
   {
-    out << "<INVALID COMMAND> Book with ID " << id << " already exists\n";
+    reportError(out, "Book with ID " + idStr + " already exists");
   }
 }
 
@@ -109,12 +114,12 @@ void velizade::CommandDispatcher::cmdShow(std::istream& in, std::ostream& out)
   in >> idStr;
   if (!in)
   {
-    out << "<INVALID COMMAND> Usage: show <book_id>\n";
+    reportError(out, "Usage: show <book_id>");
     return;
   }
   if (!isNumberValid(idStr))
   {
-    out << "<INVALID COMMAND> ID must be a number\n";
+    reportError(out, "ID must be a number");
     return;
   }
   int id = std::stoi(idStr);
@@ -125,7 +130,7 @@ void velizade::CommandDispatcher::cmdShow(std::istream& in, std::ostream& out)
   }
   else
   {
-    out << "<INVALID COMMAND> Book not found\n";
+    reportError(out, "Book not found");
   }
 }
 
@@ -135,12 +140,12 @@ void velizade::CommandDispatcher::cmdAddBook(std::istream& in, std::ostream& out
   in >> listName >> idStr;
   if (!in)
   {
-    out << "<INVALID COMMAND> Usage: add_book <user_id> <book_id>\n";
+    reportError(out, "Usage: add_book <user_id> <book_id>");
     return;
   }
   if (!isNumberValid(idStr))
   {
-    out << "<INVALID COMMAND> Book ID must be a number\n";
+    reportError(out, "Book ID must be a number");
     return;
   }
   int bookId = std::stoi(idStr);
@@ -150,7 +155,7 @@ void velizade::CommandDispatcher::cmdAddBook(std::istream& in, std::ostream& out
   }
   else
   {
-    out << "<INVALID COMMAND> Failed to add book (book does not exist or already in list)\n";
+    reportError(out, "Failed to add book (book does not exist or already in list)");
   }
 }
 
@@ -160,12 +165,12 @@ void velizade::CommandDispatcher::cmdRemove(std::istream& in, std::ostream& out)
   in >> listName >> idStr;
   if (!in)
   {
-    out << "<INVALID COMMAND> Usage: remove <user_id> <book_id>\n";
+    reportError(out, "Usage: remove <user_id> <book_id>");
     return;
   }
   if (!isNumberValid(idStr))
   {
-    out << "<INVALID COMMAND> Book ID must be a number\n";
+    reportError(out, "Book ID must be a number");
     return;
   }
   int bookId = std::stoi(idStr);
@@ -175,7 +180,7 @@ void velizade::CommandDispatcher::cmdRemove(std::istream& in, std::ostream& out)
   }
   else
   {
-    out << "<INVALID COMMAND> Book " << bookId << " not in list " << listName << "\n";
+    reportError(out, "Book " + idStr + " not in list " + listName);
   }
 }
 
@@ -185,17 +190,17 @@ void velizade::CommandDispatcher::cmdStatus(std::istream& in, std::ostream& out)
   in >> listName >> idStr >> status;
   if (!in)
   {
-    out << "<INVALID COMMAND> Usage: status <user_id> <book_id> <unread|reading|finished>\n";
+    reportError(out, "Usage: status <user_id> <book_id> <unread|reading|finished>");
     return;
   }
   if (!isNumberValid(idStr))
   {
-    out << "<INVALID COMMAND> Book ID must be a number\n";
+    reportError(out, "Book ID must be a number");
     return;
   }
   if (status != "unread" && status != "reading" && status != "finished")
   {
-    out << "<INVALID COMMAND> Invalid status\n";
+    reportError(out, "Invalid status");
     return;
   }
   int bookId = std::stoi(idStr);
@@ -205,7 +210,7 @@ void velizade::CommandDispatcher::cmdStatus(std::istream& in, std::ostream& out)
   }
   else
   {
-    out << "<INVALID COMMAND> Cannot set status (list is not personal or book not found)\n";
+    reportError(out, "Cannot set status (list is not personal or book not found)");
   }
 }
 
@@ -215,20 +220,15 @@ void velizade::CommandDispatcher::cmdList(std::istream& in, std::ostream& out)
   in >> listName;
   if (!in)
   {
-    out << "<INVALID COMMAND> Usage: list <user_id>\n";
+    reportError(out, "Usage: list <user_id>");
     return;
   }
-  Vector<std::string> output;
-  if (core_.listList(listName, output))
+  if (core_.listList(listName, out))
   {
-    for (size_t i = 0; i < output.getSize(); ++i)
-    {
-      out << output[i] << "\n";
-    }
   }
   else
   {
-    out << "<INVALID COMMAND> List " << listName << " does not exist\n";
+    reportError(out, "List " + listName + " does not exist");
   }
 }
 
@@ -238,12 +238,12 @@ void velizade::CommandDispatcher::cmdFilter(std::istream& in, std::ostream& out)
   in >> newList >> source >> status;
   if (!in)
   {
-    out << "<INVALID COMMAND> Usage: filter <new_list> <source_list> <status>\n";
+    reportError(out, "Usage: filter <new_list> <source_list> <status>");
     return;
   }
   if (status != "unread" && status != "reading" && status != "finished")
   {
-    out << "<INVALID COMMAND> Invalid status\n";
+    reportError(out, "Invalid status");
     return;
   }
   if (core_.filterByStatus(newList, source, status))
@@ -252,7 +252,7 @@ void velizade::CommandDispatcher::cmdFilter(std::istream& in, std::ostream& out)
   }
   else
   {
-    out << "<INVALID COMMAND> Filtering error (source list is not personal or new list already exists)\n";
+    reportError(out, "Filtering error (source list is not personal or new list already exists)");
   }
 }
 
@@ -262,12 +262,12 @@ void velizade::CommandDispatcher::cmdFilterNot(std::istream& in, std::ostream& o
   in >> newList >> source >> status;
   if (!in)
   {
-    out << "<INVALID COMMAND> Usage: filter_not <new_list> <source_list> <status>\n";
+    reportError(out, "Usage: filter_not <new_list> <source_list> <status>");
     return;
   }
   if (status != "unread" && status != "reading" && status != "finished")
   {
-    out << "<INVALID COMMAND> Invalid status\n";
+    reportError(out, "Invalid status");
     return;
   }
   if (core_.filterNotStatus(newList, source, status))
@@ -276,7 +276,7 @@ void velizade::CommandDispatcher::cmdFilterNot(std::istream& in, std::ostream& o
   }
   else
   {
-    out << "<INVALID COMMAND> Filtering error (source list is not personal or new list already exists)\n";
+    reportError(out, "Filtering error (source list is not personal or new list already exists)");
   }
 }
 
@@ -286,7 +286,7 @@ void velizade::CommandDispatcher::cmdMerge(std::istream& in, std::ostream& out)
   in >> newList >> l1 >> l2;
   if (!in)
   {
-    out << "<INVALID COMMAND> Usage: merge <new_list> <list1> <list2>\n";
+    reportError(out, "Usage: merge <new_list> <list1> <list2>");
     return;
   }
   if (core_.mergeLists(newList, l1, l2))
@@ -295,7 +295,7 @@ void velizade::CommandDispatcher::cmdMerge(std::istream& in, std::ostream& out)
   }
   else
   {
-    out << "<INVALID COMMAND> Merge error\n";
+    reportError(out, "Merge error");
   }
 }
 
@@ -305,7 +305,7 @@ void velizade::CommandDispatcher::cmdUnion(std::istream& in, std::ostream& out)
   in >> newList >> l1 >> l2;
   if (!in)
   {
-    out << "<INVALID COMMAND> Usage: union <new_list> <list1> <list2>\n";
+    reportError(out, "Usage: union <new_list> <list1> <list2>");
     return;
   }
   if (core_.intersectLists(newList, l1, l2))
@@ -314,7 +314,7 @@ void velizade::CommandDispatcher::cmdUnion(std::istream& in, std::ostream& out)
   }
   else
   {
-    out << "<INVALID COMMAND> Intersection error\n";
+    reportError(out, "Intersection error");
   }
 }
 
@@ -324,7 +324,7 @@ void velizade::CommandDispatcher::cmdComplement(std::istream& in, std::ostream& 
   in >> newList >> l1 >> l2;
   if (!in)
   {
-    out << "<INVALID COMMAND> Usage: complement <new_list> <list1> <list2>\n";
+    reportError(out, "Usage: complement <new_list> <list1> <list2>");
     return;
   }
   if (core_.complementLists(newList, l1, l2))
@@ -333,7 +333,7 @@ void velizade::CommandDispatcher::cmdComplement(std::istream& in, std::ostream& 
   }
   else
   {
-    out << "<INVALID COMMAND> Complement error\n";
+    reportError(out, "Complement error");
   }
 }
 
@@ -343,7 +343,7 @@ void velizade::CommandDispatcher::cmdExport(std::istream& in, std::ostream& out)
   in >> filename;
   if (!in)
   {
-    out << "<INVALID COMMAND> Usage: export <filename>\n";
+    reportError(out, "Usage: export <filename>");
     return;
   }
   if (core_.exportData(filename))
@@ -352,7 +352,7 @@ void velizade::CommandDispatcher::cmdExport(std::istream& in, std::ostream& out)
   }
   else
   {
-    out << "<INVALID COMMAND> Failed to save file\n";
+    reportError(out, "Failed to save file");
   }
 }
 
@@ -362,7 +362,7 @@ void velizade::CommandDispatcher::cmdImport(std::istream& in, std::ostream& out)
   in >> filename;
   if (!in)
   {
-    out << "<INVALID COMMAND> Usage: import <filename>\n";
+    reportError(out, "Usage: import <filename>");
     return;
   }
   if (core_.importData(filename))
@@ -371,6 +371,6 @@ void velizade::CommandDispatcher::cmdImport(std::istream& in, std::ostream& out)
   }
   else
   {
-    out << "<INVALID COMMAND> File not found\n";
+    reportError(out, "File not found");
   }
 }

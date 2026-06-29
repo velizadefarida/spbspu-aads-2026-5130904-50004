@@ -5,7 +5,6 @@
 
 namespace velizade
 {
-
   enum class Status
   {
     UNREAD,

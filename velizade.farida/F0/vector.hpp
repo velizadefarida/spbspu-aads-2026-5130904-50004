@@ -2,150 +2,450 @@
 #define VECTOR_HPP
 
 #include <cstddef>
+#include <stdexcept>
+#include <utility>
+#include <algorithm>
 
 namespace velizade
 {
-
-  template <typename T>
+  template< class T >
   class Vector
   {
-  private:
-    T* data;
-    size_t capacity;
-    size_t size;
-
-    void reallocate(size_t new_capacity);
-
   public:
+    using iterator = T*;
+    using const_iterator = const T*;
+
     Vector();
-    Vector(size_t initial_capacity);
     ~Vector();
 
-    void push_back(const T& value);
-    size_t getSize() const;
-    size_t getCapacity() const;
-    T& operator[](size_t index);
-    const T& operator[](size_t index) const;
-    void clear();
-    void pop_back();
-    T& back();
-    const T& back() const;
-    T* begin();
-    T* end();
-    const T* begin() const;
-    const T* end() const;
+    explicit Vector(size_t size);
+    Vector(size_t size, const T& value);
+
+    Vector(const Vector< T >& rhs);
+    Vector(Vector< T >&& rhs) noexcept;
+
+    Vector< T >& operator=(const Vector< T >& rhs);
+    Vector< T >& operator=(Vector< T >&& rhs) noexcept;
+
+    T& operator[](size_t id) noexcept;
+    const T& operator[](size_t id) const noexcept;
+
+    bool isEmpty() const noexcept;
+    size_t getSize() const noexcept;
+    size_t getCapacity() const noexcept;
+    void pushBack(const T&);
+    void popBack();
+    void pushFront(const T& v);
+
+    void swap(Vector< T >& rhs) noexcept;
+    T& at(size_t id);
+    const T& at(size_t id) const;
+
+    void insert(size_t id, const T& rhs);
+    void insert(size_t id, const Vector<T>& rhs, size_t beg, size_t end);
+    void erase(size_t id);
+    void erase(size_t beg, size_t end);
+
+    iterator begin() noexcept;
+    const_iterator begin() const noexcept;
+    iterator end() noexcept;
+    const_iterator end() const noexcept;
+
+    iterator insert(iterator pos, const T& rhs);
+    template<class InputIt>
+    iterator insert(iterator pos, InputIt first, InputIt last);
+    iterator erase(iterator pos);
+    iterator erase(iterator first, iterator last);
+
+  private:
+    T* data_;
+    size_t size_;
+    size_t capacity_;
   };
-}
 
-template <typename T>
-void velizade::Vector<T>::reallocate(size_t new_capacity)
-{
-  T* new_data = new T[new_capacity];
-  for (size_t i = 0; i < size; ++i)
+  template< class T >
+  Vector< T >::Vector() :
+    data_(nullptr),
+    size_(0),
+    capacity_(0)
+  {}
+
+  template< class T >
+  Vector< T >::~Vector()
   {
-    new_data[i] = data[i];
+    delete[] data_;
   }
-  delete[] data;
-  data = new_data;
-  capacity = new_capacity;
-}
 
-template <typename T>
-velizade::Vector<T>::Vector() : data(nullptr), capacity(0), size(0) {}
+  template< class T >
+  Vector< T >::Vector(size_t size) :
+    data_(size ? new T[size] : nullptr),
+    size_(size),
+    capacity_(size)
+  {}
 
-template <typename T>
-velizade::Vector<T>::Vector(size_t initial_capacity)
-  : data(new T[initial_capacity]), capacity(initial_capacity), size(0) {}
-
-template <typename T>
-velizade::Vector<T>::~Vector()
-{
-  delete[] data;
-}
-
-template <typename T>
-void velizade::Vector<T>::push_back(const T& value)
-{
-  if (size == capacity)
+  template< class T >
+  Vector< T >::Vector(size_t size, const T& value) :
+    Vector(size)
   {
-    reallocate(capacity == 0 ? 1 : capacity * 2);
+    for (size_t i = 0; i < size; ++i)
+    {
+      data_[i] = value;
+    }
   }
-  data[size++] = value;
-}
 
-template <typename T>
-size_t velizade::Vector<T>::getSize() const
-{
-  return size;
-}
-
-template <typename T>
-size_t velizade::Vector<T>::getCapacity() const
-{
-  return capacity;
-}
-
-template <typename T>
-T& velizade::Vector<T>::operator[](size_t index)
-{
-  return data[index];
-}
-
-template <typename T>
-const T& velizade::Vector<T>::operator[](size_t index) const
-{
-  return data[index];
-}
-
-template <typename T>
-void velizade::Vector<T>::clear()
-{
-  size = 0;
-}
-
-template <typename T>
-void velizade::Vector<T>::pop_back()
-{
-  if (size > 0)
+  template< class T >
+  Vector< T >::Vector(const Vector< T >& rhs) :
+    Vector(rhs.getSize())
   {
-    --size;
+    for (size_t i = 0; i < rhs.getSize(); ++i)
+    {
+      data_[i] = rhs.data_[i];
+    }
   }
-}
 
-template <typename T>
-T& velizade::Vector<T>::back()
-{
-  return data[size - 1];
-}
+  template< class T >
+  Vector< T >::Vector(Vector< T >&& rhs) noexcept :
+    Vector()
+  {
+    swap(rhs);
+  }
 
-template <typename T>
-const T& velizade::Vector<T>::back() const
-{
-  return data[size - 1];
-}
+  template< class T >
+  Vector< T >& Vector< T >::operator=(const Vector< T >& rhs)
+  {
+    if (this == std::addressof(rhs))
+    {
+      return *this;
+    }
+    Vector< T > cpy(rhs);
+    swap(cpy);
+    return *this;
+  }
 
-template <typename T>
-T* velizade::Vector<T>::begin()
-{
-  return data;
-}
+  template< class T >
+  Vector< T >& Vector< T >::operator=(Vector< T >&& rhs) noexcept
+  {
+    Vector< T > cpy(std::move(rhs));
+    swap(cpy);
+    return *this;
+  }
 
-template <typename T>
-T* velizade::Vector<T>::end()
-{
-  return data + size;
-}
+  template< class T >
+  T& Vector< T >::operator[](size_t id) noexcept
+  {
+    return data_[id];
+  }
 
-template <typename T>
-const T* velizade::Vector<T>::begin() const
-{
-  return data;
-}
+  template< class T >
+  const T& Vector< T >::operator[](size_t id) const noexcept
+  {
+    return data_[id];
+  }
 
-template <typename T>
-const T* velizade::Vector<T>::end() const
-{
-  return data + size;
+  template< class T >
+  bool Vector< T >::isEmpty() const noexcept
+  {
+    return !size_;
+  }
+
+  template< class T >
+  size_t Vector< T >::getSize() const noexcept
+  {
+    return size_;
+  }
+
+  template< class T >
+  size_t Vector< T >::getCapacity() const noexcept
+  {
+    return capacity_;
+  }
+
+  template< class T >
+  void Vector< T >::pushBack(const T& rhs)
+  {
+    if (size_ >= capacity_)
+    {
+      size_t newCapacity = (capacity_ == 0) ? 1 : capacity_ * 2;
+      T* newData = new T[newCapacity];
+      try
+      {
+        for (size_t i = 0; i < size_; ++i)
+        {
+          newData[i] = data_[i];
+        }
+      }
+      catch (...)
+      {
+        delete[] newData;
+        throw;
+      }
+      delete[] data_;
+      data_ = newData;
+      capacity_ = newCapacity;
+    }
+    data_[size_++] = rhs;
+  }
+
+  template< class T >
+  void Vector< T >::popBack()
+  {
+    if (size_)
+    {
+      --size_;
+    }
+  }
+
+  template< class T >
+  void Vector< T >::pushFront(const T& t)
+  {
+    Vector< T > v(getSize() + 1);
+    v[0] = t;
+    for (size_t i = 1; i < v.getSize(); ++i)
+    {
+      v[i] = (*this)[i - 1];
+    }
+    swap(v);
+  }
+
+  template< class T >
+  void Vector< T >::swap(Vector< T >& rhs) noexcept
+  {
+    std::swap(data_, rhs.data_);
+    std::swap(size_, rhs.size_);
+    std::swap(capacity_, rhs.capacity_);
+  }
+
+  template< class T >
+  T& Vector< T >::at(size_t id)
+  {
+    if (id < getSize())
+    {
+      return data_[id];
+    }
+    throw std::out_of_range("id out of bound");
+  }
+
+  template< class T >
+  const T& Vector< T >::at(size_t id) const
+  {
+    if (id < getSize())
+    {
+      return data_[id];
+    }
+    throw std::out_of_range("id out of bound");
+  }
+
+  template< class T >
+  void Vector< T >::insert(size_t id, const T& rhs)
+  {
+    if (id > size_)
+    {
+      throw std::out_of_range("insert index out of range");
+    }
+    if (size_ == capacity_)
+    {
+      size_t newCapacity = (capacity_ == 0) ? 1 : capacity_ * 2;
+      T* newData = new T[newCapacity];
+      try
+      {
+        for (size_t i = 0; i < size_; ++i)
+        {
+          newData[i] = std::move(data_[i]);
+        }
+      }
+      catch (...)
+      {
+        delete[] newData;
+        throw;
+      }
+      delete[] data_;
+      data_ = newData;
+      capacity_ = newCapacity;
+    }
+    for (size_t i = size_; i > id; --i)
+    {
+      data_[i] = std::move(data_[i - 1]);
+    }
+    data_[id] = rhs;
+    ++size_;
+  }
+
+  template< class T >
+  void Vector< T >::insert(size_t id, const Vector< T >& rhs, size_t beg, size_t end)
+  {
+    if (id > size_)
+    {
+      throw std::out_of_range("insert index out of range");
+    }
+    if (beg > end || end > rhs.size_)
+    {
+      throw std::out_of_range("source range invalid");
+    }
+    size_t count = end - beg;
+    if (count == 0)
+    {
+      return;
+    }
+    if (size_ + count > capacity_)
+    {
+      size_t newCapacity = size_ + count;
+      if (newCapacity < capacity_ * 2)
+      {
+        newCapacity = capacity_ * 2;
+      }
+      T* newData = new T[newCapacity];
+      try
+      {
+        for (size_t i = 0; i < size_; ++i)
+        {
+          newData[i] = std::move(data_[i]);
+        }
+      }
+      catch (...)
+      {
+        delete[] newData;
+        throw;
+      }
+      delete[] data_;
+      data_ = newData;
+      capacity_ = newCapacity;
+    }
+    for (size_t i = size_; i > id; --i)
+    {
+      data_[i + count - 1] = std::move(data_[i - 1]);
+    }
+    for (size_t i = 0; i < count; ++i)
+    {
+      data_[id + i] = rhs.data_[beg + i];
+    }
+    size_ += count;
+  }
+
+  template< class T >
+  void Vector< T >::erase(size_t id)
+  {
+    if (id >= size_)
+    {
+      throw std::out_of_range("erase index out of range");
+    }
+    for (size_t i = id; i < size_ - 1; ++i)
+    {
+      data_[i] = std::move(data_[i + 1]);
+    }
+    --size_;
+  }
+
+  template< class T >
+  void Vector< T >::erase(size_t beg, size_t end)
+  {
+    if (beg > end || end > size_)
+    {
+      throw std::out_of_range("erase range invalid");
+    }
+    size_t count = end - beg;
+    for (size_t i = beg; i < size_ - count; ++i)
+    {
+      data_[i] = std::move(data_[i + count]);
+    }
+    size_ -= count;
+  }
+
+  template< class T >
+  typename Vector< T >::iterator Vector< T >::begin() noexcept
+  {
+    return data_;
+  }
+
+  template< class T >
+  typename Vector< T >::const_iterator Vector< T >::begin() const noexcept
+  {
+    return data_;
+  }
+
+  template< class T >
+  typename Vector< T >::iterator Vector< T >::end() noexcept
+  {
+    return data_ + size_;
+  }
+
+  template< class T >
+  typename Vector< T >::const_iterator Vector< T >::end() const noexcept
+  {
+    return data_ + size_;
+  }
+
+  template< class T >
+  typename Vector< T >::iterator Vector< T >::insert(iterator pos, const T& rhs)
+  {
+    size_t index = pos - begin();
+    insert(index, rhs);
+    return begin() + index;
+  }
+
+  template< class T >
+  template< class InputIt >
+  typename Vector< T >::iterator Vector< T >::insert(iterator pos, InputIt first, InputIt last)
+  {
+    size_t index = pos - begin();
+    size_t count = 0;
+    for (InputIt it = first; it != last; ++it, ++count) {}
+    if (count == 0)
+    {
+      return begin() + index;
+    }
+    if (size_ + count > capacity_)
+    {
+      size_t newCapacity = size_ + count;
+      if (newCapacity < capacity_ * 2)
+      {
+        newCapacity = capacity_ * 2;
+      }
+      T* newData = new T[newCapacity];
+      try
+      {
+        for (size_t i = 0; i < size_; ++i)
+        {
+          newData[i] = std::move(data_[i]);
+        }
+      }
+      catch (...)
+      {
+        delete[] newData;
+        throw;
+      }
+      delete[] data_;
+      data_ = newData;
+      capacity_ = newCapacity;
+    }
+    for (size_t i = size_; i > index; --i)
+    {
+      data_[i + count - 1] = std::move(data_[i - 1]);
+    }
+    InputIt it = first;
+    for (size_t i = 0; i < count; ++i, ++it)
+    {
+      data_[index + i] = *it;
+    }
+    size_ += count;
+    return begin() + index;
+  }
+
+  template< class T >
+  typename Vector< T >::iterator Vector< T >::erase(iterator pos)
+  {
+    size_t index = pos - begin();
+    erase(index);
+    return begin() + index;
+  }
+
+  template< class T >
+  typename Vector< T >::iterator Vector< T >::erase(iterator first, iterator last)
+  {
+    size_t beg = first - begin();
+    size_t end = last - begin();
+    erase(beg, end);
+    return begin() + beg;
+  }
 }
 
 #endif

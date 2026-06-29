@@ -1,4 +1,5 @@
 #include "status.hpp"
+#include <stdexcept>
 
 std::string velizade::statusToString(velizade::Status s)
 {
@@ -14,7 +15,10 @@ std::string velizade::statusToString(velizade::Status s)
   {
     return "finished";
   }
-  return "";
+  else
+  {
+    throw std::invalid_argument("Unknown status");
+  }
 }
 
 velizade::Status velizade::stringToStatus(const std::string& str)
